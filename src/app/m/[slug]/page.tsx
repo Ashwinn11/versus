@@ -12,7 +12,8 @@ import { MatchStructuredData } from "@/components/structured-data";
 import { Icon, categoryIcon } from "@/components/ui/icon";
 import { db } from "@/db";
 import { getMatchBySlug } from "@/db/queries/matches";
-import { formatCount, splitPercentages } from "@/lib/utils";
+import { SITE_NAME } from "@/lib/site";
+import { formatCount } from "@/lib/utils";
 import { votes } from "@/db/schema";
 import { getVoterIdentity } from "@/lib/voter";
 
@@ -26,32 +27,44 @@ export async function generateMetadata({
   const match = await getMatchBySlug(slug);
   if (!match) return { title: "Match not found" };
 
-  const [pa, pb] = splitPercentages(match.a.voteCount, match.b.voteCount);
   const versus = `${match.a.name} vs. ${match.b.name}`;
-  const votes = match.totalVotes === 1 ? "1 vote" : `${formatCount(match.totalVotes)} votes`;
+  // Creators rarely end the question with punctuation.
+  const question = /[.!?]$/.test(match.question)
+    ? match.question
+    : `${match.question}?`;
 
-  // The image already carries the question as its headline, so repeating it
-  // verbatim here wastes the one line of description a platform gives you.
-  // These add what the image cannot: the stakes, and a reason to click.
-  let title: string;
+  // The real question, not a generic "who wins?" — it makes every card
+  // unique and self-explanatory, and leaves the description free.
+  const title =
+    match.status === "ended"
+      ? (() => {
+          const w = match.winnerMatchContenderId === match.a.id ? match.a : match.b;
+          const l = w.id === match.a.id ? match.b : match.a;
+          return `${w.name} beat ${l.name} — ${question}`;
+        })()
+      : `${versus} — ${question}`;
+
+  // One fact, plainly: who is ahead. Anything more repeats the title or the
+  // image sitting next to it.
+  const leader =
+    match.a.voteCount === match.b.voteCount
+      ? null
+      : match.a.voteCount > match.b.voteCount
+        ? match.a
+        : match.b;
+  const votes = (n: number) => `${formatCount(n)} ${n === 1 ? "vote" : "votes"}`;
+
   let description: string;
-
-  if (match.status === "ended") {
-    const winner = match.winnerMatchContenderId === match.a.id ? match.a : match.b;
-    const loser = winner.id === match.a.id ? match.b : match.a;
-    const winPct = winner.id === match.a.id ? pa : pb;
-    title = `${winner.name} beat ${loser.name}`;
-    description = `${match.question} The crowd chose ${winner.name}, ${winPct}% to ${100 - winPct}%, after ${votes}.`;
-  } else if (match.status === "scheduled") {
-    title = `${versus} — starting soon`;
-    description = `${match.question} Voting opens shortly. No account needed — pick a side when it starts.`;
+  if (match.status === "scheduled") {
+    description = "Voting opens soon.";
+  } else if (match.totalVotes === 0) {
+    description = "No votes yet — be the first.";
+  } else if (!leader) {
+    description = `Dead even on ${votes(match.totalVotes)}.`;
+  } else if (match.status === "ended") {
+    description = `${leader.name} won with ${votes(leader.voteCount)}.`;
   } else {
-    const leader = pa === pb ? null : pa > pb ? match.a : match.b;
-    const standing = leader
-      ? `${leader.name} leads ${Math.max(pa, pb)}% to ${Math.min(pa, pb)}% after ${votes}.`
-      : `Dead even at ${pa}% each after ${votes}.`;
-    title = `${versus} — who wins?`;
-    description = `${match.question} ${standing} Vote now, no account needed.`;
+    description = `${leader.name} is leading with ${votes(leader.voteCount)}.`;
   }
 
   return {
@@ -65,6 +78,10 @@ export async function generateMetadata({
       description,
       type: "article",
       url: `/m/${slug}`,
+      // Next replaces the parent openGraph object rather than merging it, so
+      // this has to be repeated or Discord renders the card anonymously.
+      siteName: SITE_NAME,
+      locale: "en_GB",
     },
     twitter: { card: "summary_large_image", title, description },
   };

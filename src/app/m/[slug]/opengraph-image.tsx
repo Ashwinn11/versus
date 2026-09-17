@@ -57,6 +57,15 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const votes =
     match.totalVotes === 1 ? "1 vote" : `${formatCount(match.totalVotes)} votes`;
 
+  // A call to action, told the truth for each state — "vote now" on a match
+  // that closed last week would be worse than having none at all.
+  const cta =
+    match.status === "ended"
+      ? "SEE HOW IT ENDED"
+      : match.status === "scheduled"
+        ? "VOTING OPENS SOON"
+        : "PICK A SIDE — NO ACCOUNT NEEDED";
+
   return (
     new ImageResponse(
       (
@@ -67,7 +76,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             width: "100%",
             height: "100%",
             background: PAPER,
-            padding: "40px 56px 44px",
+            padding: "38px 56px 36px",
             fontFamily: "Jakarta, sans-serif",
           }}
         >
@@ -158,7 +167,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           <div
             style={{
               display: "flex",
-              height: 20,
+              height: 18,
               borderRadius: 999,
               overflow: "hidden",
               background: "#ece2d4",
@@ -166,6 +175,33 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           >
             <div style={{ display: "flex", width: `${pa}%`, background: match.a.color }} />
             <div style={{ display: "flex", width: `${pb}%`, background: match.b.color }} />
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginTop: 22,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "12px 28px",
+                borderRadius: 999,
+                background: INK,
+                color: PAPER,
+                fontSize: 20,
+                fontWeight: 800,
+                letterSpacing: 1.4,
+              }}
+            >
+              {cta}
+              <div style={{ display: "flex", fontSize: 22 }}>&#8594;</div>
+            </div>
           </div>
         </div>
       ),
@@ -208,8 +244,8 @@ function Side({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          width: 210,
-          height: 210,
+          width: 190,
+          height: 190,
           borderRadius: 34,
           overflow: "hidden",
           background: c.color,
@@ -217,7 +253,7 @@ function Side({
       >
         {c.imageUrl ? (
            
-          <img src={c.imageUrl} alt="" width={210} height={210} style={{ objectFit: "cover" }} />
+          <img src={c.imageUrl} alt="" width={190} height={190} style={{ objectFit: "cover" }} />
         ) : (
           <div
             style={{

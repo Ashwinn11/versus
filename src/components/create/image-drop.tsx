@@ -9,15 +9,21 @@ const MAX_BYTES = 5 * 1024 * 1024;
 const OUTPUT_SIZE = 800;
 
 /**
- * Crops to a centred square and re-encodes to WebP in the browser before
+ * Crops to a centred square and re-encodes to JPEG in the browser before
  * uploading.
+ *
+ * JPEG rather than WebP on purpose: Satori, which renders the OG link
+ * previews, cannot decode WebP, so WebP portraits were silently missing from
+ * every shared card. Browsers never see this file directly — next/image
+ * re-encodes to WebP or AVIF on the way out — so the only cost is a slightly
+ * larger object in the bucket.
  *
  * Doing it here rather than server-side is what lets every card assume a 1:1
  * portrait: the contract is enforced at the only point where a non-square
  * image can still be rejected cheaply, and it turns a 4MB phone photo into
  * ~80KB before it ever crosses the network.
  */
-async function toSquareWebp(file: File): Promise<Blob> {
+async function toSquareJpeg(file: File): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
   const side = Math.min(bitmap.width, bitmap.height);
   const sx = (bitmap.width - side) / 2;
@@ -34,8 +40,8 @@ async function toSquareWebp(file: File): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => (blob ? resolve(blob) : reject(new Error("Encode failed"))),
-      "image/webp",
-      0.86,
+      "image/jpeg",
+      0.88,
     );
   });
 }
@@ -61,12 +67,12 @@ export function ImageDrop({
     }
     setBusy(true);
     try {
-      const blob = await toSquareWebp(file);
+      const blob = await toSquareJpeg(file);
 
       const presign = await fetch("/api/upload", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ contentType: "image/webp" }),
+        body: JSON.stringify({ contentType: "image/jpeg" }),
       });
       if (!presign.ok) {
         const data = (await presign.json().catch(() => null)) as { error?: string } | null;
@@ -80,7 +86,7 @@ export function ImageDrop({
       const put = await fetch(uploadUrl, {
         method: "PUT",
         headers: {
-          "content-type": "image/webp",
+          "content-type": "image/jpeg",
           "cache-control": "public, max-age=31536000, immutable",
         },
         body: blob,
