@@ -1,5 +1,7 @@
 import "server-only";
 
+import { SITE_URL } from "@/lib/site";
+
 /**
  * Fails loudly at first access rather than surfacing as a confusing runtime
  * error deep inside a query or an OAuth callback.
@@ -24,8 +26,16 @@ export const env = {
   get BETTER_AUTH_SECRET() {
     return required("BETTER_AUTH_SECRET");
   },
+  /**
+   * Derived from the site origin rather than set by hand.
+   *
+   * These two must agree or the OAuth callback lands on a different host than
+   * the one that started the flow and the sign-in silently fails. Vercel
+   * supplies VERCEL_PROJECT_PRODUCTION_URL, so a deployment configures itself
+   * and cannot drift from the domain it is actually served on.
+   */
   get BETTER_AUTH_URL() {
-    return process.env.BETTER_AUTH_URL || "http://localhost:3000";
+    return process.env.BETTER_AUTH_URL || SITE_URL;
   },
   get GOOGLE_CLIENT_ID() {
     return optional("GOOGLE_CLIENT_ID");
