@@ -67,14 +67,24 @@ export async function generateMetadata({
     description = `${leader.name} is leading with ${votes(leader.voteCount)}.`;
   }
 
+  const searchDescription =
+    match.status === "scheduled"
+      ? `${question} Voting on ${versus} opens soon on Versus — pick a side the moment it starts, no account needed.`
+      : match.status === "ended"
+        ? `${question} ${description} See the full result and how the crowd split on ${versus}.`
+        : `${question} ${description} Cast your vote on ${versus} — live results, one tap, no account needed.`;
+
   return {
     title,
-    description,
+    // Search snippet: no image beside it, so it carries the full context.
+    description: searchDescription,
     // Self-referencing canonical: a match is reachable from several feeds, and
     // without this those become competing duplicates of the same page.
     alternates: { canonical: `/m/${slug}` },
     openGraph: {
       title,
+      // Social card: the image beside it already shows the split and the
+      // call to action, so this stays to the one fact they cannot read there.
       description,
       type: "article",
       url: `/m/${slug}`,
