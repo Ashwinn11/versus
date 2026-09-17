@@ -13,6 +13,7 @@ import {
   matches,
   tags,
 } from "@/db/schema";
+import { sweepIfStale } from "@/db/queries/lifecycle";
 import { toContender, type ResolvedContender } from "@/lib/contenders";
 
 export type MatchStatus = "draft" | "scheduled" | "live" | "ended";
@@ -67,6 +68,10 @@ export async function listMatches(opts: {
   excludeIds?: string[];
   createdBy?: string;
 } = {}) {
+  // Anything past its end time is settled before we read, so a feed can never
+  // show "LIVE" on a match that finished hours ago.
+  await sweepIfStale();
+
   const limit = Math.min(opts.limit ?? 12, 48);
   const where = [];
 
@@ -257,6 +262,8 @@ export async function hydrateMatches(ids: string[]): Promise<MatchSummary[]> {
 export const getMatchBySlug = cache(async function getMatchBySlug(
   slug: string,
 ): Promise<MatchSummary | null> {
+  await sweepIfStale();
+
   const [row] = await db
     .select({ id: matches.id })
     .from(matches)
