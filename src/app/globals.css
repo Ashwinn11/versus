@@ -1,1 +1,246 @@
 @import "tailwindcss";
+
+/* ==========================================================================
+   Versus — "paper & collectibles"
+
+   Warm printed paper, not a screen. Contenders are collectible cards: soft
+   drop shadows, a slight tilt, thick friendly outlines. The whimsy comes from
+   craft details — a wonky display face, cards that straighten when you reach
+   for them, a tug-of-war bar — not from clip art.
+
+   Light throughout. Colour is carried almost entirely by the two contenders.
+   ========================================================================== */
+
+@theme {
+  /* --- Paper ladder: warm, never clinical white ------------------------ */
+  --color-paper: oklch(0.982 0.012 85);
+  --color-card: oklch(1 0 0);
+  --color-sand: oklch(0.955 0.018 82);
+  --color-tint: oklch(0.925 0.024 80);
+
+  --color-ink: oklch(0.24 0.028 55);
+  --color-ink-soft: oklch(0.45 0.030 55);
+  --color-ink-faint: oklch(0.62 0.026 60);
+
+  --color-rule: oklch(0.88 0.020 75);
+  --color-rule-strong: oklch(0.78 0.028 70);
+
+  /* --- Brand: marigold. Warm, sunny, unmistakably playful. ------------- */
+  --color-marigold-300: oklch(0.88 0.14 75);
+  --color-marigold-400: oklch(0.82 0.17 68);
+  --color-marigold-500: oklch(0.75 0.19 60);
+  --color-marigold-600: oklch(0.66 0.19 52);
+
+  --color-berry: oklch(0.62 0.22 12);
+  --color-grape: oklch(0.58 0.20 305);
+  --color-leaf: oklch(0.68 0.17 148);
+
+  /* --- Type ------------------------------------------------------------
+     Fraunces carries the whimsy in its own axes (SOFT rounds the terminals,
+     WONK swaps in the playful alternates). Plus Jakarta keeps the interface
+     friendly but quiet underneath it. */
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  --text-hero: clamp(2.5rem, 6.5vw, 5rem);
+  --text-hero--line-height: 0.95;
+  --text-hero--letter-spacing: -0.025em;
+  --text-display: clamp(1.75rem, 3.5vw, 2.75rem);
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: -0.02em;
+
+  --text-label: 0.6875rem;
+  --text-label--line-height: 1;
+  --text-label--letter-spacing: 0.14em;
+
+  /* --- Shape: generous and rounded, like a printed card ---------------- */
+  --radius-card: 1.75rem;
+  --radius-inner: 1.25rem;
+  --radius-pill: 999px;
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --c-a: oklch(0.75 0.19 60);
+    --c-b: oklch(0.58 0.20 305);
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Confetti dots. Fixed, faint, and sized so they read as printed texture
+     rather than as a pattern anyone is meant to notice. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image:
+      radial-gradient(circle at 50% 50%, oklch(0.75 0.19 60 / 0.16) 1.5px, transparent 1.6px),
+      radial-gradient(circle at 50% 50%, oklch(0.58 0.20 305 / 0.12) 1.5px, transparent 1.6px);
+    background-size: 44px 44px, 44px 44px;
+    background-position: 0 0, 22px 22px;
+  }
+
+  /* Warm corner light, tinted by whichever two contenders are on screen. */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(60rem 36rem at 0% -10%, color-mix(in oklch, var(--c-a) 16%, transparent), transparent 62%),
+      radial-gradient(60rem 36rem at 100% -10%, color-mix(in oklch, var(--c-b) 16%, transparent), transparent 62%);
+  }
+
+  ::selection {
+    background: var(--color-marigold-300);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-ink);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-variation-settings: "SOFT" 40, "WONK" 1;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  .label {
+    font-size: var(--text-label);
+    letter-spacing: var(--text-label--letter-spacing);
+    line-height: 1;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--color-ink-faint);
+  }
+
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  /* A printed card: soft ambient shadow plus a warm contact shadow, never a
+     grey border pretending to be depth. */
+  .card-shadow {
+    box-shadow:
+      0 1px 2px oklch(0.45 0.03 55 / 0.06),
+      0 6px 16px -4px oklch(0.45 0.03 55 / 0.10),
+      0 18px 40px -12px oklch(0.45 0.03 55 / 0.14);
+  }
+
+  .card-shadow-lg {
+    box-shadow:
+      0 2px 4px oklch(0.45 0.03 55 / 0.07),
+      0 12px 28px -6px oklch(0.45 0.03 55 / 0.13),
+      0 32px 64px -16px oklch(0.45 0.03 55 / 0.18);
+  }
+
+  /* A contender's colour is chosen to look good as a large fill, which says
+     nothing about whether it can be read as text on white — "A Rock" is
+     bone-white and its percentage vanished entirely.
+
+     Relative colour syntax clamps lightness (and floors chroma) so any accent
+     stays legible as type, while the unmodified colour is still used for
+     fills. The color-mix fallback covers browsers without `oklch(from ...)`. */
+  .text-accent {
+    color: color-mix(in oklch, var(--card-accent) 55%, black);
+  }
+  @supports (color: oklch(from white l c h)) {
+    .text-accent {
+      color: oklch(from var(--card-accent) min(l, 0.52) max(c, 0.09) h);
+    }
+  }
+
+  /* Same problem as `.text-accent`, one step lighter: a fill can be brighter
+     than type and still read, but pure bone on cream paints nothing at all. */
+  .fill-accent {
+    background: color-mix(in oklch, var(--card-accent) 82%, black);
+  }
+  @supports (color: oklch(from white l c h)) {
+    .fill-accent {
+      background: oklch(from var(--card-accent) min(l, 0.82) max(c, 0.06) h);
+    }
+  }
+
+  /* The detail half of a contender card: the chosen colour at low saturation,
+     so the card is unmistakably "theirs" without fighting the text on it. */
+  .bg-accent-tint {
+    background: color-mix(in oklch, var(--card-accent) 14%, white);
+  }
+  @supports (color: oklch(from white l c h)) {
+    .bg-accent-tint {
+      background: oklch(from var(--card-accent) clamp(0.93, l, 0.97) min(c, 0.06) h);
+    }
+  }
+
+  /* A solid button in the contender's colour. Lightness is capped so white
+     label text always clears contrast, whatever colour was picked — a marigold
+     contender would otherwise ship an unreadable button. */
+  .btn-accent {
+    background: color-mix(in oklch, var(--card-accent) 78%, black);
+    color: white;
+  }
+  @supports (color: oklch(from white l c h)) {
+    .btn-accent {
+      background: oklch(from var(--card-accent) min(l, 0.58) max(c, 0.10) h);
+      color: white;
+    }
+  }
+  .btn-accent:hover {
+    filter: brightness(1.12);
+  }
+
+  /* Images sit on white cards, so their hairline is pure black at low alpha —
+     a tinted one picks up the card underneath and reads as a dirty edge. */
+  .img-edge {
+    outline: 1px solid oklch(0 0 0 / 0.1);
+    outline-offset: -1px;
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
+
+  .scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+
+  .press {
+    transition-property: scale, background-color, border-color, color, box-shadow, rotate;
+    transition-duration: 150ms;
+    transition-timing-function: var(--ease-out-quint);
+  }
+  .press:active { scale: 0.96; }
+
+  /* Collectible tilt. Cards sit slightly askew and straighten as you reach for
+     them — the one flourish the whole aesthetic rests on. */
+  .tilt-l { rotate: -1.4deg; }
+  .tilt-r { rotate: 1.4deg; }
+  .tilt-l:hover, .tilt-r:hover { rotate: 0deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .tilt-l, .tilt-r { rotate: 0deg; }
+}

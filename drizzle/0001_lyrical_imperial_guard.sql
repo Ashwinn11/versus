@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "votes_ip_uq" ON "votes" USING btree ("match_id","ip_hash") WHERE "votes"."ip_hash" is not null;
