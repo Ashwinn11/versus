@@ -1,5 +1,5 @@
 {
-  "id": "f7bccc82-2e01-4768-8b7d-25d9155c75cb",
+  "id": "dea71ecc-4c70-4bc0-8da9-7fb220d5a2c5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -177,188 +177,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.contenders": {
-      "name": "contenders",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "image_url": {
-          "name": "image_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "default_nickname": {
-          "name": "default_nickname",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "default_color": {
-          "name": "default_color",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "default_stats": {
-          "name": "default_stats",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "category_id": {
-          "name": "category_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_by": {
-          "name": "created_by",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "wins": {
-          "name": "wins",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "losses": {
-          "name": "losses",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "draws": {
-          "name": "draws",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "total_votes": {
-          "name": "total_votes",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "match_count": {
-          "name": "match_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "contenders_category_votes_idx": {
-          "name": "contenders_category_votes_idx",
-          "columns": [
-            {
-              "expression": "category_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "total_votes",
-              "isExpression": false,
-              "asc": false,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "contenders_name_idx": {
-          "name": "contenders_name_idx",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "contenders_category_id_categories_id_fk": {
-          "name": "contenders_category_id_categories_id_fk",
-          "tableFrom": "contenders",
-          "tableTo": "categories",
-          "columnsFrom": [
-            "category_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "contenders_created_by_user_id_fk": {
-          "name": "contenders_created_by_user_id_fk",
-          "tableFrom": "contenders",
-          "tableTo": "user",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "contenders_slug_unique": {
-          "name": "contenders_slug_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.match_categories": {
       "name": "match_categories",
       "schema": "",
@@ -465,16 +283,16 @@
           "primaryKey": false,
           "notNull": true
         },
-        "contender_id": {
-          "name": "contender_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
         "side": {
           "name": "side",
           "type": "contender_side",
           "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -488,7 +306,7 @@
           "name": "color",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "image_url": {
           "name": "image_url",
@@ -537,27 +355,6 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "match_contenders_entrant_uq": {
-          "name": "match_contenders_entrant_uq",
-          "columns": [
-            {
-              "expression": "match_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "contender_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
@@ -572,19 +369,6 @@
             "id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "match_contenders_contender_id_contenders_id_fk": {
-          "name": "match_contenders_contender_id_contenders_id_fk",
-          "tableFrom": "match_contenders",
-          "tableTo": "contenders",
-          "columnsFrom": [
-            "contender_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
           "onUpdate": "no action"
         }
       },
@@ -1251,6 +1035,28 @@
             }
           ],
           "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "votes_ip_uq": {
+          "name": "votes_ip_uq",
+          "columns": [
+            {
+              "expression": "match_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "ip_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"votes\".\"ip_hash\" is not null",
           "concurrently": false,
           "method": "btree",
           "with": {}

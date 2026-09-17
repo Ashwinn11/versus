@@ -1,14 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 import { Icon } from "@/components/ui/icon";
 import { countdownParts } from "@/lib/utils";
 
 /**
- * Ticking countdown. Rendered only after mount: a server-rendered clock is
- * wrong the instant it reaches the browser, and hydrating over it trips a
- * mismatch warning on every load.
+ * A ticking countdown.
+ *
+ * The clock is external state that the server cannot know, so it is read with
+ * `useSyncExternalStore` rather than mirrored into `useState` from an effect:
+ * the server snapshot is `null` (rendering nothing), the client subscribes to a
+ * one-second tick, and React handles hydration without a mismatch or a
+ * cascading re-render on mount.
+ *
+ * The snapshot is a plain number of seconds so it stays referentially stable
+ * between reads — returning a fresh object each time would spin React forever.
  */
 export function Countdown({
   target,
@@ -17,18 +24,21 @@ export function Countdown({
   target: string | null;
   prefix: string;
 }) {
-  const [parts, setParts] = useState<ReturnType<typeof countdownParts>>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const tick = () => setParts(countdownParts(target));
-    tick();
-    const id = setInterval(tick, 1000);
+  const subscribe = useCallback((onChange: () => void) => {
+    const id = setInterval(onChange, 1000);
     return () => clearInterval(id);
-  }, [target]);
+  }, []);
 
-  if (!mounted) return <span className="h-5" />;
+  const nowSeconds = useSyncExternalStore(
+    subscribe,
+    () => Math.floor(Date.now() / 1000),
+    () => null,
+  );
+
+  // Not yet hydrated: reserve the line so the header doesn't jump when it fills.
+  if (nowSeconds === null) return <span className="block h-5" />;
+
+  const parts = countdownParts(target);
   if (!parts) return null;
 
   const segments = parts.days

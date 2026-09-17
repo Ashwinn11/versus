@@ -8,6 +8,7 @@ import { LiveBadge } from "@/components/match/live-badge";
 import { ShareRow } from "@/components/match/share-row";
 import { TaleOfTheTape } from "@/components/match/tale-of-the-tape";
 import { VoteArena } from "@/components/match/vote-arena";
+import { MatchStructuredData } from "@/components/structured-data";
 import { Icon, categoryIcon } from "@/components/ui/icon";
 import { db } from "@/db";
 import { getMatchBySlug } from "@/db/queries/matches";
@@ -28,7 +29,15 @@ export async function generateMetadata({
   return {
     title,
     description: match.question,
-    openGraph: { title, description: match.question, type: "article" },
+    // Self-referencing canonical: a match is reachable from several feeds, and
+    // without this those become competing duplicates of the same page.
+    alternates: { canonical: `/m/${slug}` },
+    openGraph: {
+      title,
+      description: match.question,
+      type: "article",
+      url: `/m/${slug}`,
+    },
     twitter: { card: "summary_large_image", title, description: match.question },
   };
 }
@@ -49,13 +58,27 @@ export default async function MatchPage({ params }: PageProps<"/m/[slug]">) {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-4 sm:px-6 sm:pt-6">
-      <Link
-        href="/"
-        className="press mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-soft hover:text-ink"
-      >
-        <Icon name="chevron-right" size={15} className="rotate-180" />
-        All matches
-      </Link>
+      <MatchStructuredData match={match} />
+      {/* The clock is the one piece of state that keeps changing while you
+          read, so it sits out of the centred column entirely — top right,
+          where a scoreboard clock belongs, instead of pushing the question
+          and the cards further down the page. */}
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <Link
+          href="/"
+          className="press inline-flex items-center gap-1.5 text-sm font-semibold text-ink-soft hover:text-ink"
+        >
+          <Icon name="chevron-right" size={15} className="rotate-180" />
+          All matches
+        </Link>
+
+        {match.status === "live" && match.endsAt && (
+          <Countdown target={match.endsAt.toISOString()} prefix="Closes in" />
+        )}
+        {match.status === "scheduled" && match.startsAt && (
+          <Countdown target={match.startsAt.toISOString()} prefix="Starts in" />
+        )}
+      </div>
 
       <div className="text-center">
         <VoteArena
@@ -98,14 +121,6 @@ export default async function MatchPage({ params }: PageProps<"/m/[slug]">) {
             {match.question}
           </p>
 
-          <div className="mt-3 flex justify-center">
-            {match.status === "live" && match.endsAt && (
-              <Countdown target={match.endsAt.toISOString()} prefix="Closes in" />
-            )}
-            {match.status === "scheduled" && match.startsAt && (
-              <Countdown target={match.startsAt.toISOString()} prefix="Starts in" />
-            )}
-          </div>
         </VoteArena>
       </div>
 
@@ -114,7 +129,7 @@ export default async function MatchPage({ params }: PageProps<"/m/[slug]">) {
       </div>
 
       <div className="mx-auto mt-10 max-w-3xl">
-        <ShareRow title={`${match.a.name} vs. ${match.b.name}`} slug={match.slug} />
+        <ShareRow slug={match.slug} />
       </div>
 
     </div>

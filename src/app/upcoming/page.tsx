@@ -5,6 +5,7 @@ import { FeedPage } from "@/components/feed/feed-page";
 export const revalidate = 30;
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/upcoming" },
   title: "Upcoming",
   description: "Matches that haven't started yet.",
 };

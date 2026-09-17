@@ -2,7 +2,8 @@ import Link from "next/link";
 
 import { CategoryNav } from "@/components/feed/category-nav";
 import { LoadMore } from "@/components/feed/load-more";
-import { EmptyState, MatchGrid } from "@/components/feed/match-grid";
+import { MatchGrid } from "@/components/feed/match-grid";
+import { LandingHero } from "@/components/landing-hero";
 import { MainEvent } from "@/components/match/main-event";
 import { Icon } from "@/components/ui/icon";
 import { getMainEvent, listCategories, listMatches } from "@/db/queries/matches";
@@ -27,42 +28,21 @@ export default async function HomePage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-10">
-      {mainEvent ? (
-        <MainEvent match={mainEvent} />
-      ) : (
-        <EmptyState
-          title="The arena is empty"
-          body="No live matches yet. Be the first to put two things in the ring."
-          action={
-            <Link
-              href="/create"
-              className="press inline-flex items-center gap-2 rounded-pill bg-marigold-400 px-5 py-2.5 font-bold text-ink"
-            >
-              <Icon name="plus" size={16} strong />
-              Create the first match
-            </Link>
-          }
-        />
-      )}
+      {mainEvent ? <MainEvent match={mainEvent} /> : <LandingHero />}
 
-      <div className="mt-12">
-        <CategoryNav categories={categories} />
-      </div>
+      {live.items.length > 0 && (
+        <>
+          <div className="mt-12">
+            <CategoryNav categories={categories} />
+          </div>
 
-      <section className="mt-8">
-        <SectionHeading icon="live" title="Happening now" accent />
-        {live.items.length > 0 ? (
-          <>
+          <section className="mt-8">
+            <SectionHeading icon="live" title="Happening now" accent />
             <MatchGrid matches={live.items} />
             <LoadMore initialCursor={live.nextCursor} status="live" />
-          </>
-        ) : (
-          <EmptyState
-            title="Nothing live"
-            body="Every match has been settled. Start the next one."
-          />
-        )}
-      </section>
+          </section>
+        </>
+      )}
 
       {upcoming.items.length > 0 && (
         <section className="mt-14">

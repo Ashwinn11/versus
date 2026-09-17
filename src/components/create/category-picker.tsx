@@ -38,15 +38,12 @@ export function CategoryPicker({
     return categories.filter((c) => c.name.toLowerCase().includes(q));
   }, [categories, query]);
 
-  // Clamp the highlight whenever filtering shortens the list, or it can point
-  // past the end and Enter selects nothing.
-  useEffect(() => {
-    setActive((i) => Math.min(i, Math.max(matches.length - 1, 0)));
-  }, [matches.length]);
+  // Clamped here rather than synced from an effect — the effect version
+  // rendered once with a stale index before correcting itself.
+  const activeIndex = Math.min(active, Math.max(matches.length - 1, 0));
 
   useEffect(() => {
     if (open) search.current?.focus();
-    else setQuery("");
   }, [open]);
 
   useEffect(() => {
@@ -58,16 +55,21 @@ export function CategoryPicker({
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [open]);
 
+  function closeMenu() {
+    setOpen(false);
+    setQuery("");
+  }
+
   function choose(slug: string) {
     onChange(slug === value ? "" : slug);
-    setOpen(false);
+    closeMenu();
   }
 
   return (
     <div ref={root} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => (open ? closeMenu() : setOpen(true))}
         aria-haspopup="listbox"
         aria-expanded={open}
         className={cn(
@@ -108,17 +110,17 @@ export function CategoryPicker({
               onKeyDown={(e) => {
                 if (e.key === "ArrowDown") {
                   e.preventDefault();
-                  setActive((i) => Math.min(i + 1, matches.length - 1));
+                  setActive(Math.min(activeIndex + 1, matches.length - 1));
                 } else if (e.key === "ArrowUp") {
                   e.preventDefault();
-                  setActive((i) => Math.max(i - 1, 0));
+                  setActive(Math.max(activeIndex - 1, 0));
                 } else if (e.key === "Enter") {
                   e.preventDefault();
-                  const pick = matches[active];
+                  const pick = matches[activeIndex];
                   if (pick) choose(pick.slug);
                 } else if (e.key === "Escape") {
                   e.preventDefault();
-                  setOpen(false);
+                  closeMenu();
                 }
               }}
               placeholder="Search categories…"
@@ -140,7 +142,7 @@ export function CategoryPicker({
                   onClick={() => choose(c.slug)}
                   className={cn(
                     "flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm",
-                    i === active ? "bg-sand" : "bg-transparent",
+                    i === activeIndex ? "bg-sand" : "bg-transparent",
                   )}
                 >
                   <Icon name={categoryIcon(c.slug)} size={17} style={{ color: c.accentColor }} />

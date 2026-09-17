@@ -7,10 +7,17 @@ export const alt = "A match on Versus";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+const PAPER = "#fdf8ef";
+const INK = "#2b2118";
+const MUTED = "#6b5a4a";
+
 /**
- * The unfurl card. This is the product's entire growth loop: a pasted link
- * that renders as a plain URL converts far worse than one showing two faces
- * and a live split, so this gets the same care as the page itself.
+ * The unfurl card — the product's entire growth loop.
+ *
+ * A pasted link that renders as a bare URL converts far worse than one showing
+ * two faces, the question and the live split, so this gets the same care as
+ * the page itself. Satori supports a subset of CSS: flexbox only, no grid, and
+ * every element with more than one child needs an explicit `display`.
  */
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -26,10 +33,10 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             height: "100%",
             alignItems: "center",
             justifyContent: "center",
-            background: "#fdf8ef",
+            background: PAPER,
             fontSize: 64,
             fontWeight: 700,
-            color: "#2b2118",
+            color: INK,
           }}
         >
           Versus
@@ -41,6 +48,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
 
   const [pa, pb] = splitPercentages(match.a.voteCount, match.b.voteCount);
   const ended = match.status === "ended";
+  const winnerId = match.winnerMatchContenderId;
 
   return new ImageResponse(
     (
@@ -50,38 +58,39 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           flexDirection: "column",
           width: "100%",
           height: "100%",
-          background: "#fdf8ef",
-          padding: 56,
+          background: PAPER,
+          padding: "44px 56px",
           fontFamily: "sans-serif",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        {/* Brand row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              width: 44,
-              height: 44,
-              borderRadius: 14,
-              background: "#2b2118",
-              color: "#fdf8ef",
-              fontSize: 18,
+              width: 40,
+              height: 40,
+              borderRadius: 13,
+              background: INK,
+              color: PAPER,
+              fontSize: 16,
               fontWeight: 800,
             }}
           >
             VS
           </div>
-          <div style={{ fontSize: 26, fontWeight: 700, color: "#2b2118" }}>Versus</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: INK }}>Versus</div>
           <div
             style={{
               display: "flex",
               marginLeft: "auto",
-              padding: "8px 18px",
+              padding: "7px 16px",
               borderRadius: 999,
               background: ended ? "#f0b545" : "#e8556d",
-              color: ended ? "#2b2118" : "#ffffff",
-              fontSize: 20,
+              color: ended ? INK : "#ffffff",
+              fontSize: 17,
               fontWeight: 800,
               letterSpacing: 2,
             }}
@@ -90,38 +99,62 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           </div>
         </div>
 
+        {/* The question is the headline — it is what someone is being asked. */}
         <div
           style={{
             display: "flex",
-            fontSize: match.title.length > 34 ? 60 : 76,
+            fontSize: match.question.length > 52 ? 40 : 50,
             fontWeight: 800,
-            color: "#2b2118",
-            marginTop: 30,
-            lineHeight: 1.02,
+            color: INK,
+            marginTop: 22,
+            lineHeight: 1.12,
           }}
         >
-          {match.title}
-        </div>
-
-        <div style={{ display: "flex", fontSize: 28, color: "#6b5a4a", marginTop: 12 }}>
-          {match.question.length > 78
-            ? `${match.question.slice(0, 78)}…`
+          {match.question.length > 96
+            ? `${match.question.slice(0, 96)}…`
             : match.question}
         </div>
 
-        {/* Both sides, sized by their share — the bar IS the story. */}
-        <div style={{ display: "flex", marginTop: "auto", gap: 14 }}>
-          <Panel name={match.a.name} pct={pa} color={match.a.color} align="flex-start" />
-          <Panel name={match.b.name} pct={pb} color={match.b.color} align="flex-end" />
-        </div>
-
+        {/* Both contenders, face to face */}
         <div
           style={{
             display: "flex",
-            height: 20,
+            alignItems: "center",
+            gap: 26,
+            marginTop: "auto",
+          }}
+        >
+          <Side c={match.a} pct={pa} won={ended && winnerId === match.a.id} />
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 62,
+              height: 62,
+              flexShrink: 0,
+              borderRadius: 999,
+              background: INK,
+              color: PAPER,
+              fontSize: 22,
+              fontWeight: 800,
+            }}
+          >
+            VS
+          </div>
+
+          <Side c={match.b} pct={pb} won={ended && winnerId === match.b.id} right />
+        </div>
+
+        {/* The split, as a bar the eye reads before any number */}
+        <div
+          style={{
+            display: "flex",
+            height: 18,
             borderRadius: 999,
             overflow: "hidden",
-            marginTop: 18,
+            marginTop: 22,
             background: "#ece2d4",
           }}
         >
@@ -134,31 +167,104 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   );
 }
 
-function Panel({
-  name,
+function Side({
+  c,
   pct,
-  color,
-  align,
+  won,
+  right,
 }: {
-  name: string;
+  c: { name: string; imageUrl: string | null; color: string; nickname: string | null };
   pct: number;
-  color: string;
-  align: "flex-start" | "flex-end";
+  won: boolean;
+  right?: boolean;
 }) {
+  const initials = c.name
+    .replace(/^(a|an|the)\s+/i, "")
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+
   return (
     <div
       style={{
         display: "flex",
-        flexDirection: "column",
-        alignItems: align,
         flex: 1,
+        alignItems: "center",
+        gap: 20,
+        flexDirection: right ? "row-reverse" : "row",
       }}
     >
-      <div style={{ display: "flex", fontSize: 30, fontWeight: 700, color: "#2b2118" }}>
-        {name.length > 22 ? `${name.slice(0, 22)}…` : name}
+      {/* Square portrait. Falls back to initials on the contender's own colour,
+          which most of them will use — "a rock" has no headshot. */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 150,
+          height: 150,
+          flexShrink: 0,
+          borderRadius: 26,
+          overflow: "hidden",
+          background: c.color,
+        }}
+      >
+        {c.imageUrl ? (
+           
+          <img src={c.imageUrl} alt="" width={150} height={150} style={{ objectFit: "cover" }} />
+        ) : (
+          <div style={{ display: "flex", fontSize: 62, fontWeight: 800, color: "#ffffff" }}>
+            {initials}
+          </div>
+        )}
       </div>
-      <div style={{ display: "flex", fontSize: 72, fontWeight: 800, color }}>
-        {pct}%
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: right ? "flex-end" : "flex-start",
+          minWidth: 0,
+        }}
+      >
+        {won && (
+          <div
+            style={{
+              display: "flex",
+              padding: "4px 12px",
+              borderRadius: 999,
+              background: "#f0b545",
+              color: INK,
+              fontSize: 15,
+              fontWeight: 800,
+              letterSpacing: 1.5,
+              marginBottom: 8,
+            }}
+          >
+            WINNER
+          </div>
+        )}
+        <div style={{ display: "flex", fontSize: 34, fontWeight: 800, color: INK }}>
+          {c.name.length > 18 ? `${c.name.slice(0, 18)}…` : c.name}
+        </div>
+        {c.nickname && (
+          <div style={{ display: "flex", fontSize: 18, color: MUTED, marginTop: 2 }}>
+            {c.nickname.length > 24 ? `${c.nickname.slice(0, 24)}…` : c.nickname}
+          </div>
+        )}
+        <div
+          style={{
+            display: "flex",
+            fontSize: 52,
+            fontWeight: 800,
+            color: c.color,
+            marginTop: 4,
+          }}
+        >
+          {pct}%
+        </div>
       </div>
     </div>
   );

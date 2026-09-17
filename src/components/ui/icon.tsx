@@ -21,7 +21,8 @@ export type IconName =
   | "mythical" | "vehicles" | "cursed" | "crossover"
   | "live" | "clock" | "trophy" | "share" | "plus" | "check"
   | "chevron-right" | "chevron-down" | "arrow-right" | "close" | "search"
-  | "google" | "bolt" | "flame";
+  | "logout" | "trash"
+  | "bolt" | "flame";
 
 type IconProps = SVGProps<SVGSVGElement> & {
   name: IconName;
@@ -164,6 +165,22 @@ const PATHS: Record<IconName, React.ReactNode> = {
   "chevron-down": <path d="m5.5 9.5 6.5 6.5 6.5-6.5" />,
   "arrow-right": <path d="M4 12h15m-5.5-5.5L19 12l-5.5 5.5" />,
   close: <path d="m6 6 12 12M18 6 6 18" />,
+  /* A door with an arrow leaving it — "log out", not "go forward". */
+  logout: (
+    <>
+      <path d="M15 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2" />
+      <path d="M10 12h10m-3.5-3.5L20 12l-3.5 3.5" />
+    </>
+  ),
+  /* A bin — destructive. An X would read as "dismiss this menu". */
+  trash: (
+    <>
+      <path d="M4 7h16" />
+      <path d="M9.5 7V5.4a1.4 1.4 0 0 1 1.4-1.4h2.2a1.4 1.4 0 0 1 1.4 1.4V7" />
+      <path d="M6.5 7l.8 11.6A2 2 0 0 0 9.3 20.5h5.4a2 2 0 0 0 2-1.9L17.5 7" />
+      <path d="M10.5 11v5.5M13.5 11v5.5" />
+    </>
+  ),
   search: (
     <>
       <circle cx="11" cy="11" r="6.5" />
@@ -175,14 +192,6 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <path d="M12 21c3.6 0 6-2.4 6-5.6 0-3.9-3.4-5.7-3.4-9.4 0 0-2.3 1-3.1 3.6C10.3 7 9.6 5.5 9.6 5.5 8 7.4 6 9.6 6 15.4 6 18.6 8.4 21 12 21Z" />
     </>
-  ),
-  /* Brand marks keep their own geometry and are filled, not stroked. */
-  google: (
-    <path
-      fill="currentColor"
-      stroke="none"
-      d="M21.6 12.23c0-.71-.06-1.4-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-2 3.02v2.51h3.24c1.89-1.74 2.98-4.3 2.98-7.36ZM12 22c2.7 0 4.96-.9 6.62-2.42l-3.24-2.51c-.9.6-2.05.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.07v2.59A10 10 0 0 0 12 22ZM6.41 13.91a6 6 0 0 1 0-3.82V7.5H3.07a10 10 0 0 0 0 9l3.34-2.59ZM12 5.98c1.47 0 2.79.5 3.83 1.5l2.87-2.87C16.95 2.99 14.7 2 12 2a10 10 0 0 0-8.93 5.5l3.34 2.59C7.2 7.73 9.4 5.98 12 5.98Z"
-    />
   ),
 };
 

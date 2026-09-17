@@ -1,5 +1,5 @@
 import { MatchCard } from "@/components/feed/match-card";
-import { Icon } from "@/components/ui/icon";
+import { IconTile } from "@/components/ui/icon-tile";
 import type { MatchSummary } from "@/db/queries/matches";
 
 export function MatchGrid({
@@ -31,9 +31,7 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-card border border-dashed border-rule-strong px-6 py-16 text-center">
-      <span className="grid h-12 w-12 place-items-center rounded-full bg-sand text-ink-faint">
-        <Icon name="bolt" size={22} />
-      </span>
+      <IconTile name="bolt" tone="marigold" className="h-12 w-12 rounded-full" />
       <h3 className="mt-4 font-display text-2xl text-ink">{title}</h3>
       <p className="mt-1.5 max-w-sm text-pretty text-sm text-ink-soft">{body}</p>
       {action && <div className="mt-5">{action}</div>}

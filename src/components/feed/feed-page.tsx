@@ -1,7 +1,8 @@
 import { CategoryNav } from "@/components/feed/category-nav";
 import { LoadMore } from "@/components/feed/load-more";
 import { EmptyState, MatchGrid } from "@/components/feed/match-grid";
-import { Icon, type IconName } from "@/components/ui/icon";
+import { type IconName } from "@/components/ui/icon";
+import { IconTile } from "@/components/ui/icon-tile";
 import { listCategories, listMatches, type MatchStatus } from "@/db/queries/matches";
 
 /**
@@ -41,14 +42,7 @@ export async function FeedPage({
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-10">
       <header className="mb-6 flex items-center gap-3">
-        {icon && (
-          <span
-            className="grid h-11 w-11 place-items-center rounded-2xl bg-card card-shadow"
-            style={accent ? { color: accent } : undefined}
-          >
-            <Icon name={icon} size={22} />
-          </span>
-        )}
+        {icon && <IconTile name={icon} accent={accent} />}
         <div>
           <h1 className="font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-none text-ink">
             {title}

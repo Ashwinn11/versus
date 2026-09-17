@@ -4,6 +4,7 @@ import Link from "next/link";
 import { LoadMore } from "@/components/feed/load-more";
 import { MatchGrid, EmptyState } from "@/components/feed/match-grid";
 import { Icon } from "@/components/ui/icon";
+import { IconTile } from "@/components/ui/icon-tile";
 import { listMatches } from "@/db/queries/matches";
 import { getSession } from "@/lib/session";
 
@@ -37,9 +38,7 @@ export default async function MyMatchesPage() {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-10">
       <header className="mb-6 flex items-center gap-3">
-        <span className="grid h-11 w-11 place-items-center rounded-2xl bg-card text-ink-soft card-shadow">
-          <Icon name="flame" size={22} />
-        </span>
+        <IconTile name="flame" tone="berry" />
         <div>
           <h1 className="font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-none text-ink">
             Your matches

@@ -27,6 +27,7 @@ export async function generateMetadata({
   return {
     title: row.name,
     description: `Every ${row.name} match in the arena.`,
+    alternates: { canonical: `/c/${row.slug}` },
   };
 }
 

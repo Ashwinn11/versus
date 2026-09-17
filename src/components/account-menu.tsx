@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { GoogleMark } from "@/components/ui/google-mark";
 import { Icon } from "@/components/ui/icon";
 import { signIn, signOut, useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
@@ -16,6 +18,7 @@ import { cn } from "@/lib/utils";
 export function AccountMenu({ googleReady }: { googleReady: boolean }) {
   const { data: session, isPending } = useSession();
   const [open, setOpen] = useState(false);
+  const [confirming, setConfirming] = useState<"signout" | "delete" | null>(null);
   const root = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -41,9 +44,10 @@ export function AccountMenu({ googleReady }: { googleReady: boolean }) {
     return (
       <button
         onClick={() => signIn.social({ provider: "google", callbackURL: "/create" })}
+        aria-label="Sign in with Google"
         className="press inline-flex items-center gap-1.5 rounded-pill px-3 py-2 text-sm font-semibold text-ink-soft hover:bg-sand hover:text-ink"
       >
-        <Icon name="google" size={16} />
+        <GoogleMark size={16} />
         <span className="hidden sm:inline">Sign in</span>
       </button>
     );
@@ -78,7 +82,10 @@ export function AccountMenu({ googleReady }: { googleReady: boolean }) {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+0.6rem)] z-40 w-60 overflow-hidden rounded-2xl border border-rule bg-card card-shadow-lg"
+          className={cn(
+            "absolute right-0 top-[calc(100%+0.6rem)] z-40 w-60 overflow-hidden rounded-2xl border border-rule bg-card card-shadow-lg",
+            "max-sm:fixed max-sm:inset-x-3 max-sm:top-[4.25rem] max-sm:w-auto max-sm:max-h-[calc(100dvh-5.5rem)] max-sm:overflow-y-auto",
+          )}
         >
           <div className="border-b border-rule px-4 py-3">
             <p className="truncate text-sm font-bold text-ink">{user.name || "Signed in"}</p>
@@ -97,98 +104,64 @@ export function AccountMenu({ googleReady }: { googleReady: boolean }) {
             </Link>
             <button
               role="menuitem"
-              onClick={async () => {
+              onClick={() => {
                 setOpen(false);
-                await signOut();
-                router.refresh();
+                setConfirming("signout");
               }}
               className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm font-semibold text-ink hover:bg-sand"
             >
-              <Icon name="arrow-right" size={17} className="text-ink-soft" />
+              <Icon name="logout" size={17} className="text-ink-soft" />
               Sign out
             </button>
           </div>
 
           <div className="border-t border-rule py-1.5">
-            <DeleteAccount onDone={() => setOpen(false)} />
+            <button
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                setConfirming("delete");
+              }}
+              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm font-semibold text-berry hover:bg-berry/8"
+            >
+              <Icon name="trash" size={17} />
+              Delete account
+            </button>
           </div>
         </div>
       )}
-    </div>
-  );
-}
 
-/**
- * Deleting an account is irreversible and takes every match the person made
- * with it, so it asks for the word "delete" rather than an easily-mistyped
- * confirm button — and says plainly what goes.
- */
-function DeleteAccount({ onDone }: { onDone: () => void }) {
-  const [confirming, setConfirming] = useState(false);
-  const [text, setText] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-
-  async function run() {
-    if (text.trim().toLowerCase() !== "delete" || busy) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/account", { method: "DELETE" });
-      if (!res.ok) throw new Error("Could not delete the account");
-      onDone();
-      router.push("/");
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not delete the account");
-      setBusy(false);
-    }
-  }
-
-  if (!confirming) {
-    return (
-      <button
-        role="menuitem"
-        onClick={() => setConfirming(true)}
-        className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm font-semibold text-berry hover:bg-berry/8"
-      >
-        <Icon name="close" size={17} />
-        Delete account
-      </button>
-    );
-  }
-
-  return (
-    <div className="px-4 py-3">
-      <p className="text-xs font-semibold text-ink">
-        This deletes your account and every match you created. It can&rsquo;t be undone.
-      </p>
-      <input
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Type delete"
-        className="mt-2 w-full rounded-xl border border-rule bg-paper px-3 py-2 text-sm focus:border-berry focus:outline-none"
+      <ConfirmDialog
+        open={confirming === "signout"}
+        onClose={() => setConfirming(null)}
+        onConfirm={async () => {
+          await signOut();
+          setConfirming(null);
+          router.refresh();
+        }}
+        title="Sign out?"
+        description="You can still vote on any match without an account."
+        confirmLabel="Sign out"
+        icon="logout"
       />
-      {error && <p className="mt-1.5 text-xs font-semibold text-berry">{error}</p>}
-      <div className="mt-2 flex gap-2">
-        <button
-          onClick={run}
-          disabled={text.trim().toLowerCase() !== "delete" || busy}
-          className="press flex-1 rounded-pill bg-berry px-3 py-2 text-xs font-bold text-white disabled:opacity-40"
-        >
-          {busy ? "Deleting…" : "Delete"}
-        </button>
-        <button
-          onClick={() => {
-            setConfirming(false);
-            setText("");
-          }}
-          className="press rounded-pill border border-rule px-3 py-2 text-xs font-bold text-ink-soft"
-        >
-          Cancel
-        </button>
-      </div>
+
+      <ConfirmDialog
+        open={confirming === "delete"}
+        onClose={() => setConfirming(null)}
+        onConfirm={async () => {
+          const res = await fetch("/api/account", { method: "DELETE" });
+          if (!res.ok) throw new Error("Could not delete the account");
+          setConfirming(null);
+          router.push("/");
+          router.refresh();
+        }}
+        title="Delete your account?"
+        description="This can't be undone. Matches you created stay up, without your name on them."
+        confirmLabel="Delete account"
+        icon="trash"
+        tone="danger"
+      />
     </div>
   );
 }
+

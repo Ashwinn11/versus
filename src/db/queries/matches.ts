@@ -7,14 +7,13 @@ import { cache } from "react";
 import { db } from "@/db";
 import {
   categories,
-  contenders,
   matchCategories,
   matchContenders,
   matchTags,
   matches,
   tags,
 } from "@/db/schema";
-import { resolveContender, type ResolvedContender } from "@/lib/contenders";
+import { toContender, type ResolvedContender } from "@/lib/contenders";
 
 export type MatchStatus = "draft" | "scheduled" | "live" | "ended";
 
@@ -145,13 +144,11 @@ export async function listMatches(opts: {
       catName: categories.name,
       catAccent: categories.accentColor,
       mc: matchContenders,
-      c: contenders,
     })
     .from(page)
     .innerJoin(matches, eq(matches.id, page.id))
     .leftJoin(categories, eq(categories.id, matches.primaryCategoryId))
     .innerJoin(matchContenders, eq(matchContenders.matchId, matches.id))
-    .innerJoin(contenders, eq(contenders.id, matchContenders.contenderId))
     .orderBy(desc(matches.startsAt), desc(matches.id));
 
   const built = assembleMatches(rows);
@@ -181,7 +178,6 @@ type JoinedRow = {
   catName: string | null;
   catAccent: string | null;
   mc: typeof matchContenders.$inferSelect;
-  c: typeof contenders.$inferSelect;
 };
 
 function assembleMatches(rows: JoinedRow[]): MatchSummary[] {
@@ -220,87 +216,40 @@ function assembleMatches(rows: JoinedRow[]): MatchSummary[] {
         category: m.catSlug
           ? { slug: m.catSlug, name: m.catName!, accentColor: m.catAccent! }
           : null,
-        a: resolveContender(a.mc, a.c),
-        b: resolveContender(b.mc, b.c),
+        a: toContender(a.mc),
+        b: toContender(b.mc),
       },
     ];
   });
 }
 
-/**
- * Loads full match rows for a set of ids in a fixed number of queries.
- * Hydrating per-match would be a classic N+1 — a 12-card feed would issue 37
- * round trips to Neon instead of 3.
- */
+/** Loads full match rows for a set of ids, preserving the caller's ordering. */
 export async function hydrateMatches(ids: string[]): Promise<MatchSummary[]> {
   if (ids.length === 0) return [];
 
-  const [matchRows, sides] = await Promise.all([
-    db
-      .select({
-        id: matches.id,
-        slug: matches.slug,
-        title: matches.title,
-        question: matches.question,
-        status: matches.status,
-        startsAt: matches.startsAt,
-        endsAt: matches.endsAt,
-        totalVotes: matches.totalVotes,
-        isMainEvent: matches.isMainEvent,
-        winnerMatchContenderId: matches.winnerMatchContenderId,
-        catSlug: categories.slug,
-        catName: categories.name,
-        catAccent: categories.accentColor,
-      })
-      .from(matches)
-      .leftJoin(categories, eq(categories.id, matches.primaryCategoryId))
-      .where(inArray(matches.id, ids)),
-    db
-      .select({
-        mc: matchContenders,
-        c: contenders,
-      })
-      .from(matchContenders)
-      .innerJoin(contenders, eq(contenders.id, matchContenders.contenderId))
-      .where(inArray(matchContenders.matchId, ids)),
-  ]);
+  const rows = await db
+    .select({
+      id: matches.id,
+      slug: matches.slug,
+      title: matches.title,
+      question: matches.question,
+      status: matches.status,
+      startsAt: matches.startsAt,
+      endsAt: matches.endsAt,
+      totalVotes: matches.totalVotes,
+      isMainEvent: matches.isMainEvent,
+      winnerMatchContenderId: matches.winnerMatchContenderId,
+      catSlug: categories.slug,
+      catName: categories.name,
+      catAccent: categories.accentColor,
+      mc: matchContenders,
+    })
+    .from(matches)
+    .leftJoin(categories, eq(categories.id, matches.primaryCategoryId))
+    .innerJoin(matchContenders, eq(matchContenders.matchId, matches.id))
+    .where(inArray(matches.id, ids));
 
-  const byMatch = new Map<string, typeof sides>();
-  for (const row of sides) {
-    const list = byMatch.get(row.mc.matchId) ?? [];
-    list.push(row);
-    byMatch.set(row.mc.matchId, list);
-  }
-
-  const built = matchRows.flatMap((m): MatchSummary[] => {
-    const pair = byMatch.get(m.id) ?? [];
-    const a = pair.find((p) => p.mc.side === "a");
-    const b = pair.find((p) => p.mc.side === "b");
-    // A match without both sides is unrenderable; skip rather than crash the
-    // whole feed on one bad row.
-    if (!a || !b) return [];
-    return [
-      {
-        id: m.id,
-        slug: m.slug,
-        title: m.title,
-        question: m.question,
-        status: m.status,
-        startsAt: m.startsAt,
-        endsAt: m.endsAt,
-        totalVotes: m.totalVotes,
-        isMainEvent: m.isMainEvent,
-        winnerMatchContenderId: m.winnerMatchContenderId,
-        category: m.catSlug
-          ? { slug: m.catSlug, name: m.catName!, accentColor: m.catAccent! }
-          : null,
-        a: resolveContender(a.mc, a.c),
-        b: resolveContender(b.mc, b.c),
-      },
-    ];
-  });
-
-  // Preserve the caller's ordering, which the id-set query threw away.
+  const built = assembleMatches(rows);
   const order = new Map(ids.map((id, i) => [id, i]));
   return built.sort((x, y) => order.get(x.id)! - order.get(y.id)!);
 }

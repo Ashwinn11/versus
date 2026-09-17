@@ -137,51 +137,6 @@ export const tags = pgTable(
 );
 
 /* -------------------------------------------------------------------------- */
-/*  Roster                                                                     */
-/* -------------------------------------------------------------------------- */
-
-/**
- * The reusable half of a contender: who they are across every match they ever
- * appear in, plus the lifetime record that makes the Hall of Fame worth
- * reading. Anything that changes per matchup lives on `matchContenders`.
- */
-export const contenders = pgTable(
-  "contenders",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    slug: text("slug").notNull().unique(),
-    name: text("name").notNull(),
-    imageUrl: text("image_url"),
-    defaultNickname: text("default_nickname"),
-    defaultColor: text("default_color"),
-    defaultStats: jsonb("default_stats").$type<Stat[]>(),
-    /** Nullable on purpose: some things genuinely resist classification, and
-     *  forcing a pick is friction on the flow that most needs to feel easy. */
-    categoryId: uuid("category_id").references(() => categories.id, {
-      onDelete: "set null",
-    }),
-    createdBy: text("created_by").references(() => user.id, {
-      onDelete: "set null",
-    }),
-    wins: integer("wins").default(0).notNull(),
-    losses: integer("losses").default(0).notNull(),
-    draws: integer("draws").default(0).notNull(),
-    totalVotes: integer("total_votes").default(0).notNull(),
-    matchCount: integer("match_count").default(0).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-  },
-  (t) => [
-    index("contenders_category_votes_idx").on(
-      t.categoryId,
-      t.totalVotes.desc(),
-    ),
-    index("contenders_name_idx").on(t.name),
-  ],
-);
-
-/* -------------------------------------------------------------------------- */
 /*  Matches                                                                    */
 /* -------------------------------------------------------------------------- */
 
@@ -238,9 +193,12 @@ export const matches = pgTable(
 );
 
 /**
- * The per-matchup half of a contender. Every override column is nullable and
- * means "inherit from the roster entry" — `resolveContender()` is the only
- * place that rule is expressed, so no component has to know about it.
+ * A contender, belonging to exactly one match.
+ *
+ * There is no shared roster: every field here is the creator's choice for this
+ * matchup alone. Two matches featuring "A Rock" hold two independent rows,
+ * which is what lets each creator pick their own image, nickname and colour
+ * without negotiating with anyone else's version.
  */
 export const matchContenders = pgTable(
   "match_contenders",
@@ -249,22 +207,17 @@ export const matchContenders = pgTable(
     matchId: uuid("match_id")
       .notNull()
       .references(() => matches.id, { onDelete: "cascade" }),
-    contenderId: uuid("contender_id")
-      .notNull()
-      .references(() => contenders.id, { onDelete: "restrict" }),
     side: contenderSide("side").notNull(),
+    name: text("name").notNull(),
     nickname: text("nickname"),
-    color: text("color"),
+    color: text("color").notNull(),
     imageUrl: text("image_url"),
     stats: jsonb("stats").$type<Stat[]>(),
-    /** This side's answer to `matches.question`. */
+    /** This side's line arguing its case. */
     answer: text("answer"),
     voteCount: integer("vote_count").default(0).notNull(),
   },
-  (t) => [
-    uniqueIndex("match_contenders_side_uq").on(t.matchId, t.side),
-    uniqueIndex("match_contenders_entrant_uq").on(t.matchId, t.contenderId),
-  ],
+  (t) => [uniqueIndex("match_contenders_side_uq").on(t.matchId, t.side)],
 );
 
 /* -------------------------------------------------------------------------- */
@@ -308,6 +261,44 @@ export const matchTags = pgTable(
     index("match_tags_lookup_idx").on(t.tagId, t.matchId),
   ],
 );
+
+/* -------------------------------------------------------------------------- */
+/*  Presence                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * One row per anonymous visitor, keyed by the same signed cookie that dedupes
+ * votes — so presence costs no new identifier and no new consent surface.
+ *
+ * `lastSeen` is refreshed by a heartbeat; "online now" counts rows inside a
+ * short window. The index makes that count proportional to the number of
+ * people currently on the site rather than to everyone who ever visited.
+ */
+export const visitors = pgTable(
+  "visitors",
+  {
+    voterKey: text("voter_key").primaryKey(),
+    firstSeen: timestamp("first_seen", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    lastSeen: timestamp("last_seen", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (t) => [index("visitors_last_seen_idx").on(t.lastSeen)],
+);
+
+/**
+ * Single-row counter table.
+ *
+ * Total visitors is deliberately NOT `count(*)` over `visitors`: that scans
+ * every row ever created, so the header would get slower every day the site
+ * succeeded. Incrementing on first sight keeps the read O(1) forever.
+ */
+export const siteCounters = pgTable("site_counters", {
+  id: integer("id").primaryKey().default(1),
+  totalVisitors: integer("total_visitors").default(0).notNull(),
+});
 
 /* -------------------------------------------------------------------------- */
 /*  Votes                                                                      */
@@ -363,20 +354,11 @@ export const votes = pgTable(
 /* -------------------------------------------------------------------------- */
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
-  contenders: many(contenders),
   matchCategories: many(matchCategories),
 }));
 
 export const tagsRelations = relations(tags, ({ many }) => ({
   matchTags: many(matchTags),
-}));
-
-export const contendersRelations = relations(contenders, ({ one, many }) => ({
-  category: one(categories, {
-    fields: [contenders.categoryId],
-    references: [categories.id],
-  }),
-  appearances: many(matchContenders),
 }));
 
 export const matchesRelations = relations(matches, ({ one, many }) => ({
@@ -390,19 +372,12 @@ export const matchesRelations = relations(matches, ({ one, many }) => ({
   matchTags: many(matchTags),
 }));
 
-export const matchContendersRelations = relations(
-  matchContenders,
-  ({ one }) => ({
-    match: one(matches, {
-      fields: [matchContenders.matchId],
-      references: [matches.id],
-    }),
-    contender: one(contenders, {
-      fields: [matchContenders.contenderId],
-      references: [contenders.id],
-    }),
+export const matchContendersRelations = relations(matchContenders, ({ one }) => ({
+  match: one(matches, {
+    fields: [matchContenders.matchId],
+    references: [matches.id],
   }),
-);
+}));
 
 export const matchCategoriesRelations = relations(
   matchCategories,

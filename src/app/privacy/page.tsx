@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { LegalPage, List, Section } from "@/components/legal-page";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/privacy" },
   title: "Privacy",
   description: "What Versus collects, why, and what it never stores.",
 };

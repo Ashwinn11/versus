@@ -5,6 +5,7 @@ import { FeedPage } from "@/components/feed/feed-page";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/hall-of-fame" },
   title: "Hall of Fame",
   description: "Every settled match and the side the crowd chose.",
 };

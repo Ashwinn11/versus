@@ -1,8 +1,8 @@
-import { and, eq, isNotNull, lte, sql } from "drizzle-orm";
+import { and, eq, isNotNull, lte } from "drizzle-orm";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { db } from "@/db";
-import { contenders, matchContenders, matches } from "@/db/schema";
+import { matchContenders, matches } from "@/db/schema";
 import { env } from "@/env";
 
 export const dynamic = "force-dynamic";
@@ -59,9 +59,8 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * Closes a match and writes the result into both contenders' lifetime records.
- * Exported so the creator's "end early" action settles through exactly the
- * same path — two implementations of "who won" would eventually disagree.
+ * Closes a match and records who won. Contenders belong to a single match, so
+ * there are no lifetime records to update — the result lives on the match.
  */
 export async function settleMatch(
   matchId: string,
@@ -69,20 +68,16 @@ export async function settleMatch(
   now = new Date(),
 ) {
   const sides = await db
-    .select({
-      id: matchContenders.id,
-      contenderId: matchContenders.contenderId,
-      voteCount: matchContenders.voteCount,
-    })
+    .select({ id: matchContenders.id, voteCount: matchContenders.voteCount })
     .from(matchContenders)
     .where(eq(matchContenders.matchId, matchId));
 
   const [a, b] = sides;
   if (!a || !b) return;
 
-  const draw = a.voteCount === b.voteCount;
-  const winner = draw ? null : a.voteCount > b.voteCount ? a : b;
-  const loser = draw ? null : winner === a ? b : a;
+  // A draw has no winner rather than an arbitrary one.
+  const winner =
+    a.voteCount === b.voteCount ? null : a.voteCount > b.voteCount ? a : b;
 
   await db
     .update(matches)
@@ -94,23 +89,4 @@ export async function settleMatch(
       updatedAt: now,
     })
     .where(eq(matches.id, matchId));
-
-  if (draw) {
-    for (const side of [a, b]) {
-      await db
-        .update(contenders)
-        .set({ draws: sql`${contenders.draws} + 1` })
-        .where(eq(contenders.id, side.contenderId));
-    }
-    return;
-  }
-
-  await db
-    .update(contenders)
-    .set({ wins: sql`${contenders.wins} + 1` })
-    .where(eq(contenders.id, winner!.contenderId));
-  await db
-    .update(contenders)
-    .set({ losses: sql`${contenders.losses} + 1` })
-    .where(eq(contenders.id, loser!.contenderId));
 }

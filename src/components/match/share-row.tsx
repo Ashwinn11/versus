@@ -9,12 +9,16 @@ import { Icon } from "@/components/ui/icon";
  * icon. Uses the native share sheet where there is one (every phone) and falls
  * back to copying the link.
  */
-export function ShareRow({ title, slug }: { title: string; slug: string }) {
+export function ShareRow({ slug }: { slug: string }) {
   const [copied, setCopied] = useState(false);
 
   async function share() {
     const url = `${window.location.origin}/m/${slug}`;
-    const data = { title: `${title} · Versus`, text: "Pick a side.", url };
+    // URL only. Share targets concatenate `title` and `text` onto the link, so
+    // choosing "Copy" from the sheet produced "Pick a side.\nhttp://..." rather
+    // than something you can paste into an address bar. The page's own OG tags
+    // already supply the title and description wherever the link lands.
+    const data = { url };
 
     if (navigator.share && navigator.canShare?.(data)) {
       try {

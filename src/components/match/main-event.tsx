@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ContenderCard } from "@/components/match/contender-card";
+import { Countdown } from "@/components/match/countdown";
 import { LiveBadge } from "@/components/match/live-badge";
 import { TugBar } from "@/components/match/seam";
 import { VoteCountPill } from "@/components/match/vote-count-pill";
@@ -25,6 +26,14 @@ export function MainEvent({ match }: { match: MatchSummary }) {
       className="relative"
       style={{ ["--c-a" as string]: match.a.color, ["--c-b" as string]: match.b.color }}
     >
+      {/* Absolute so the centred badge row below stays optically centred on the
+          section rather than on the space left over beside the clock. */}
+      {match.status === "live" && match.endsAt && (
+        <div className="absolute right-0 top-0 hidden sm:block">
+          <Countdown target={match.endsAt.toISOString()} prefix="Closes in" />
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center justify-center gap-2.5">
         <span className="inline-flex items-center gap-1.5 rounded-pill bg-marigold-400 px-2.5 py-1">
           <Icon name="flame" size={13} className="text-ink" strong />
@@ -32,6 +41,11 @@ export function MainEvent({ match }: { match: MatchSummary }) {
         </span>
         {match.status === "live" && <LiveBadge />}
         <VoteCountPill total={match.totalVotes} />
+        {match.status === "live" && match.endsAt && (
+          <span className="sm:hidden">
+            <Countdown target={match.endsAt.toISOString()} prefix="Closes in" />
+          </span>
+        )}
       </div>
 
       <div className="mt-3 text-center">

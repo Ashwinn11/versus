@@ -28,25 +28,6 @@ CREATE TABLE "categories" (
 	CONSTRAINT "categories_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
-CREATE TABLE "contenders" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"slug" text NOT NULL,
-	"name" text NOT NULL,
-	"image_url" text,
-	"default_nickname" text,
-	"default_color" text,
-	"default_stats" jsonb,
-	"category_id" uuid,
-	"created_by" text,
-	"wins" integer DEFAULT 0 NOT NULL,
-	"losses" integer DEFAULT 0 NOT NULL,
-	"draws" integer DEFAULT 0 NOT NULL,
-	"total_votes" integer DEFAULT 0 NOT NULL,
-	"match_count" integer DEFAULT 0 NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "contenders_slug_unique" UNIQUE("slug")
-);
---> statement-breakpoint
 CREATE TABLE "match_categories" (
 	"match_id" uuid NOT NULL,
 	"category_id" uuid NOT NULL,
@@ -57,10 +38,10 @@ CREATE TABLE "match_categories" (
 CREATE TABLE "match_contenders" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"match_id" uuid NOT NULL,
-	"contender_id" uuid NOT NULL,
 	"side" "contender_side" NOT NULL,
+	"name" text NOT NULL,
 	"nickname" text,
-	"color" text,
+	"color" text NOT NULL,
 	"image_url" text,
 	"stats" jsonb,
 	"answer" text,
@@ -147,12 +128,9 @@ CREATE TABLE "votes" (
 );
 --> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "contenders" ADD CONSTRAINT "contenders_category_id_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "contenders" ADD CONSTRAINT "contenders_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "match_categories" ADD CONSTRAINT "match_categories_match_id_matches_id_fk" FOREIGN KEY ("match_id") REFERENCES "public"."matches"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "match_categories" ADD CONSTRAINT "match_categories_category_id_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "match_contenders" ADD CONSTRAINT "match_contenders_match_id_matches_id_fk" FOREIGN KEY ("match_id") REFERENCES "public"."matches"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "match_contenders" ADD CONSTRAINT "match_contenders_contender_id_contenders_id_fk" FOREIGN KEY ("contender_id") REFERENCES "public"."contenders"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "match_tags" ADD CONSTRAINT "match_tags_match_id_matches_id_fk" FOREIGN KEY ("match_id") REFERENCES "public"."matches"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "match_tags" ADD CONSTRAINT "match_tags_tag_id_tags_id_fk" FOREIGN KEY ("tag_id") REFERENCES "public"."tags"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "matches" ADD CONSTRAINT "matches_primary_category_id_categories_id_fk" FOREIGN KEY ("primary_category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -161,15 +139,13 @@ ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("
 ALTER TABLE "votes" ADD CONSTRAINT "votes_match_id_matches_id_fk" FOREIGN KEY ("match_id") REFERENCES "public"."matches"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "votes" ADD CONSTRAINT "votes_match_contender_id_match_contenders_id_fk" FOREIGN KEY ("match_contender_id") REFERENCES "public"."match_contenders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "votes" ADD CONSTRAINT "votes_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "contenders_category_votes_idx" ON "contenders" USING btree ("category_id","total_votes" DESC NULLS LAST);--> statement-breakpoint
-CREATE INDEX "contenders_name_idx" ON "contenders" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "match_categories_lookup_idx" ON "match_categories" USING btree ("category_id","match_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "match_contenders_side_uq" ON "match_contenders" USING btree ("match_id","side");--> statement-breakpoint
-CREATE UNIQUE INDEX "match_contenders_entrant_uq" ON "match_contenders" USING btree ("match_id","contender_id");--> statement-breakpoint
 CREATE INDEX "match_tags_lookup_idx" ON "match_tags" USING btree ("tag_id","match_id");--> statement-breakpoint
 CREATE INDEX "matches_status_starts_idx" ON "matches" USING btree ("status","starts_at" DESC NULLS LAST,"id" DESC NULLS LAST);--> statement-breakpoint
 CREATE INDEX "matches_lifecycle_idx" ON "matches" USING btree ("status","ends_at") WHERE "matches"."status" in ('scheduled', 'live');--> statement-breakpoint
 CREATE INDEX "matches_main_event_idx" ON "matches" USING btree ("is_main_event","featured_rank") WHERE "matches"."is_main_event" = true;--> statement-breakpoint
 CREATE INDEX "tags_usage_idx" ON "tags" USING btree ("usage_count" DESC NULLS LAST);--> statement-breakpoint
 CREATE UNIQUE INDEX "votes_voter_uq" ON "votes" USING btree ("match_id","voter_key");--> statement-breakpoint
+CREATE UNIQUE INDEX "votes_ip_uq" ON "votes" USING btree ("match_id","ip_hash") WHERE "votes"."ip_hash" is not null;--> statement-breakpoint
 CREATE INDEX "votes_match_contender_idx" ON "votes" USING btree ("match_contender_id");

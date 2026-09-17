@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Icon } from "@/components/ui/icon";
+import { GoogleMark } from "@/components/ui/google-mark";
 import { signIn } from "@/lib/auth-client";
 
 /**
@@ -39,9 +39,9 @@ export function SignInGate({ configured }: { configured: boolean }) {
         <button
           onClick={go}
           disabled={busy}
-          className="press mt-6 inline-flex w-full items-center justify-center gap-2.5 rounded-pill bg-ink px-6 py-3.5 font-bold text-paper hover:bg-ink-soft disabled:opacity-60"
+          className="press mt-6 inline-flex w-full items-center justify-center gap-2.5 rounded-pill border border-rule bg-card px-6 py-3.5 font-bold text-ink hover:border-rule-strong hover:bg-sand disabled:opacity-60"
         >
-          <Icon name="google" size={18} />
+          <GoogleMark size={18} />
           {busy ? "Opening Google…" : "Continue with Google"}
         </button>
       ) : (
