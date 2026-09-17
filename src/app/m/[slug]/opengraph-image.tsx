@@ -80,58 +80,67 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             fontFamily: "Jakarta, sans-serif",
           }}
         >
-          {/* Brand row */}
-          <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 38,
-                height: 38,
-                borderRadius: 12,
-                background: INK,
-                color: PAPER,
-                fontSize: 15,
-                fontWeight: 800,
-              }}
-            >
-              VS
-            </div>
-            <div
-              style={{
-                fontFamily: "Fraunces, serif",
-                fontSize: 26,
-                fontWeight: 700,
-                color: INK,
-              }}
-            >
-              Versus
+          {/* Brand row.
+              Equal flex on both sides is what actually centres the pill on
+              the card — a plain row would centre it in the space left over,
+              which is off-centre by however much wider one side is. */}
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <div style={{ display: "flex", flex: 1, alignItems: "center", gap: 13 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 38,
+                  height: 38,
+                  borderRadius: 12,
+                  background: INK,
+                  color: PAPER,
+                  fontSize: 15,
+                  fontWeight: 800,
+                }}
+              >
+                VS
+              </div>
+              <div
+                style={{
+                  fontFamily: "Fraunces, serif",
+                  fontSize: 26,
+                  fontWeight: 700,
+                  color: INK,
+                }}
+              >
+                Versus
+              </div>
             </div>
 
-            {/* The call to action lives up here, not at the foot of the card:
-                every platform renders the page title immediately beneath the
-                image, and a pill sitting on that edge collided with it. */}
+            {/* The call to action sits here rather than at the foot of the
+                card: every platform renders the page title immediately below
+                the image, and a pill on that edge collided with it. */}
             <div
               style={{
                 display: "flex",
-                alignItems: "center",
-                gap: 8,
-                marginLeft: 8,
-                padding: "9px 18px",
+                padding: "10px 22px",
                 borderRadius: 999,
                 background: INK,
                 color: PAPER,
-                fontSize: 16,
+                fontSize: 17,
                 fontWeight: 800,
-                letterSpacing: 1.2,
+                letterSpacing: 1.3,
               }}
             >
               {cta}
-              <div style={{ display: "flex", fontSize: 17 }}>&#8594;</div>
             </div>
 
-            <div style={{ display: "flex", marginLeft: "auto", alignItems: "center", gap: 14 }}>
+            <div
+              style={{
+                display: "flex",
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "flex-end",
+                gap: 14,
+              }}
+            >
               <div style={{ display: "flex", fontSize: 20, fontWeight: 500, color: MUTED }}>
                 {votes}
               </div>
