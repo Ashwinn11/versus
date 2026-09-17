@@ -37,11 +37,11 @@ export function LiveStats() {
   // An empty box of the same footprint until the first frame arrives: showing
   // "0 online" on every load would be a lie, and rendering nothing at all
   // makes the rest of the header jump sideways when the numbers appear.
-  if (!stats) return <div className="hidden h-8 xl:block" />;
+  if (!stats) return <div className="hidden h-8 md:block" />;
 
   return (
     <div
-      className="hidden items-center gap-4 rounded-pill bg-sand/70 px-3.5 py-1.5 xl:flex"
+      className="hidden items-center gap-4 rounded-pill bg-sand/70 px-3.5 py-1.5 md:flex"
       aria-live="polite"
       aria-atomic="true"
     >

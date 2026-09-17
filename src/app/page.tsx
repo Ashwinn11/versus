@@ -26,8 +26,16 @@ export default async function HomePage() {
     items: liveFeed.items.filter((m) => m.id !== mainEvent?.id).slice(0, 9),
   };
 
+  const isOnlyHero = !mainEvent && live.items.length === 0 && upcoming.items.length === 0;
+
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-10">
+    <div
+      className={
+        isOnlyHero
+          ? "mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-4 py-8 sm:px-6 sm:py-12 md:py-16"
+          : "mx-auto w-full max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-10"
+      }
+    >
       {mainEvent ? <MainEvent match={mainEvent} /> : <LandingHero />}
 
       {live.items.length > 0 && (

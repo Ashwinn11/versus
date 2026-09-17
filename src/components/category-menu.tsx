@@ -67,7 +67,7 @@ export function CategoryMenu({ categories }: { categories: MenuCategory[] }) {
         aria-haspopup="menu"
         aria-expanded={open}
         className={cn(
-          "press inline-flex items-center gap-1.5 whitespace-nowrap rounded-pill px-3 py-2 text-sm font-semibold",
+          "press inline-flex items-center gap-1.5 whitespace-nowrap rounded-pill p-2 text-sm font-semibold sm:px-3 sm:py-2",
           open ? "bg-sand text-ink" : "text-ink-soft hover:bg-sand hover:text-ink",
         )}
       >

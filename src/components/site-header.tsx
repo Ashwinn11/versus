@@ -12,7 +12,7 @@ export async function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-rule/60 bg-paper/85 backdrop-blur-xl">
-      <div className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6">
+      <div className="mx-auto grid h-16 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-3 px-4 sm:px-6 md:gap-4 xl:grid-cols-[1fr_auto_1fr]">
         <Link href="/" className="press group flex w-fit items-center gap-2">
           <span className="grid h-8 w-8 -rotate-6 place-items-center rounded-xl bg-ink text-[0.65rem] font-bold text-paper transition-transform duration-300 group-hover:rotate-0">
             VS
@@ -22,9 +22,11 @@ export async function SiteHeader() {
           </span>
         </Link>
 
-        <LiveStats />
+        <div className="flex justify-center">
+          <LiveStats />
+        </div>
 
-        <nav className="flex items-center justify-end gap-1 sm:gap-2">
+        <nav className="flex items-center justify-end gap-2">
           <CategoryMenu
             categories={categories.map((c) => ({
               slug: c.slug,
@@ -34,14 +36,14 @@ export async function SiteHeader() {
           />
           <Link
             href="/hall-of-fame"
-            className="press inline-flex items-center gap-1.5 whitespace-nowrap rounded-pill px-3 py-2 text-sm font-semibold text-ink-soft hover:bg-sand hover:text-ink"
+            className="press inline-flex items-center gap-1.5 whitespace-nowrap rounded-pill p-2 text-sm font-semibold text-ink-soft hover:bg-sand hover:text-ink sm:px-3 sm:py-2"
           >
             <Icon name="trophy" size={17} />
             <span className="hidden sm:inline">Hall of Fame</span>
           </Link>
           <Link
             href="/create"
-            className="press inline-flex items-center gap-1.5 whitespace-nowrap rounded-pill bg-marigold-400 px-3.5 py-2 text-sm font-bold text-ink hover:bg-marigold-300 sm:px-4"
+            className="press inline-flex items-center gap-1.5 whitespace-nowrap rounded-pill bg-marigold-400 px-3 py-2 text-sm font-bold text-ink hover:bg-marigold-300 sm:px-4"
           >
             <Icon name="plus" size={16} strong />
             <span className="hidden sm:inline">Create match</span>

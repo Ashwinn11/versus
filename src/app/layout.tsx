@@ -63,7 +63,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-dvh flex-col antialiased">
         <SiteStructuredData />
         <SiteHeader />
-        <main className="flex-1">{children}</main>
+        <main className="flex flex-1 flex-col">{children}</main>
         <SiteFooter />
         {/* Cookieless and aggregate-only: no identifier is stored on the
             device and nothing follows anyone between sites. Speed Insights
