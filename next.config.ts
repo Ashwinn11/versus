@@ -18,6 +18,18 @@ function r2Host(): string | null {
 
 const host = r2Host();
 
+// This is read at BUILD time, and Vercel does not expose variables marked
+// "Sensitive" to the build. When that happened the allow-list came out empty
+// and every uploaded portrait silently 400'd through next/image — a failure
+// with no error anywhere in the logs. Shout about it instead.
+if (!host && process.env.NODE_ENV === "production") {
+  console.warn(
+    "\n  ⚠  R2_PUBLIC_URL is not set at build time — uploaded images will fail\n" +
+      "     to load through next/image. On Vercel, make sure it is stored as a\n" +
+      "     NON-SENSITIVE environment variable.\n",
+  );
+}
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: host
