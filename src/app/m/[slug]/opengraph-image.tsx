@@ -63,8 +63,8 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     match.status === "ended"
       ? "SEE HOW IT ENDED"
       : match.status === "scheduled"
-        ? "VOTING OPENS SOON"
-        : "PICK A SIDE — NO ACCOUNT NEEDED";
+        ? "OPENS SOON"
+        : "PICK A SIDE";
 
   return (
     new ImageResponse(
@@ -76,7 +76,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             width: "100%",
             height: "100%",
             background: PAPER,
-            padding: "38px 56px 36px",
+            padding: "38px 56px 42px",
             fontFamily: "Jakarta, sans-serif",
           }}
         >
@@ -107,6 +107,28 @@ export default async function Image({ params }: { params: Promise<{ slug: string
               }}
             >
               Versus
+            </div>
+
+            {/* The call to action lives up here, not at the foot of the card:
+                every platform renders the page title immediately beneath the
+                image, and a pill sitting on that edge collided with it. */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginLeft: 8,
+                padding: "9px 18px",
+                borderRadius: 999,
+                background: INK,
+                color: PAPER,
+                fontSize: 16,
+                fontWeight: 800,
+                letterSpacing: 1.2,
+              }}
+            >
+              {cta}
+              <div style={{ display: "flex", fontSize: 17 }}>&#8594;</div>
             </div>
 
             <div style={{ display: "flex", marginLeft: "auto", alignItems: "center", gap: 14 }}>
@@ -177,32 +199,6 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             <div style={{ display: "flex", width: `${pb}%`, background: match.b.color }} />
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: 22,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "12px 28px",
-                borderRadius: 999,
-                background: INK,
-                color: PAPER,
-                fontSize: 20,
-                fontWeight: 800,
-                letterSpacing: 1.4,
-              }}
-            >
-              {cta}
-              <div style={{ display: "flex", fontSize: 22 }}>&#8594;</div>
-            </div>
-          </div>
         </div>
       ),
       { ...size, fonts },
@@ -244,8 +240,8 @@ function Side({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          width: 190,
-          height: 190,
+          width: 205,
+          height: 205,
           borderRadius: 34,
           overflow: "hidden",
           background: c.color,
@@ -253,7 +249,7 @@ function Side({
       >
         {c.imageUrl ? (
            
-          <img src={c.imageUrl} alt="" width={190} height={190} style={{ objectFit: "cover" }} />
+          <img src={c.imageUrl} alt="" width={205} height={205} style={{ objectFit: "cover" }} />
         ) : (
           <div
             style={{
