@@ -12,6 +12,7 @@ import { MatchStructuredData } from "@/components/structured-data";
 import { Icon, categoryIcon } from "@/components/ui/icon";
 import { db } from "@/db";
 import { getMatchBySlug } from "@/db/queries/matches";
+import { formatCount, splitPercentages } from "@/lib/utils";
 import { votes } from "@/db/schema";
 import { getVoterIdentity } from "@/lib/voter";
 
@@ -25,20 +26,47 @@ export async function generateMetadata({
   const match = await getMatchBySlug(slug);
   if (!match) return { title: "Match not found" };
 
-  const title = `${match.a.name} vs. ${match.b.name}`;
+  const [pa, pb] = splitPercentages(match.a.voteCount, match.b.voteCount);
+  const versus = `${match.a.name} vs. ${match.b.name}`;
+  const votes = match.totalVotes === 1 ? "1 vote" : `${formatCount(match.totalVotes)} votes`;
+
+  // The image already carries the question as its headline, so repeating it
+  // verbatim here wastes the one line of description a platform gives you.
+  // These add what the image cannot: the stakes, and a reason to click.
+  let title: string;
+  let description: string;
+
+  if (match.status === "ended") {
+    const winner = match.winnerMatchContenderId === match.a.id ? match.a : match.b;
+    const loser = winner.id === match.a.id ? match.b : match.a;
+    const winPct = winner.id === match.a.id ? pa : pb;
+    title = `${winner.name} beat ${loser.name}`;
+    description = `${match.question} The crowd chose ${winner.name}, ${winPct}% to ${100 - winPct}%, after ${votes}.`;
+  } else if (match.status === "scheduled") {
+    title = `${versus} — starting soon`;
+    description = `${match.question} Voting opens shortly. No account needed — pick a side when it starts.`;
+  } else {
+    const leader = pa === pb ? null : pa > pb ? match.a : match.b;
+    const standing = leader
+      ? `${leader.name} leads ${Math.max(pa, pb)}% to ${Math.min(pa, pb)}% after ${votes}.`
+      : `Dead even at ${pa}% each after ${votes}.`;
+    title = `${versus} — who wins?`;
+    description = `${match.question} ${standing} Vote now, no account needed.`;
+  }
+
   return {
     title,
-    description: match.question,
+    description,
     // Self-referencing canonical: a match is reachable from several feeds, and
     // without this those become competing duplicates of the same page.
     alternates: { canonical: `/m/${slug}` },
     openGraph: {
       title,
-      description: match.question,
+      description,
       type: "article",
       url: `/m/${slug}`,
     },
-    twitter: { card: "summary_large_image", title, description: match.question },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
