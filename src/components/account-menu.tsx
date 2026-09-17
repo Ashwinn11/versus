@@ -45,7 +45,7 @@ export function AccountMenu({ googleReady }: { googleReady: boolean }) {
       <button
         onClick={() => signIn.social({ provider: "google", callbackURL: "/create" })}
         aria-label="Sign in with Google"
-        className="press inline-flex items-center gap-1.5 rounded-pill px-3 py-2 text-sm font-semibold text-ink-soft hover:bg-sand hover:text-ink"
+        className="press inline-flex items-center gap-1.5 whitespace-nowrap rounded-pill px-3 py-2 text-sm font-semibold text-ink-soft hover:bg-sand hover:text-ink"
       >
         <GoogleMark size={16} />
         <span className="hidden sm:inline">Sign in</span>
