@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 import { SiteFooter } from "@/components/site-footer";
 import { SiteStructuredData } from "@/components/structured-data";
 import { SiteHeader } from "@/components/site-header";
@@ -62,6 +65,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />
+        {/* Cookieless and aggregate-only: no identifier is stored on the
+            device and nothing follows anyone between sites. Speed Insights
+            samples real Core Web Vitals from actual visits rather than a
+            synthetic lab run. */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

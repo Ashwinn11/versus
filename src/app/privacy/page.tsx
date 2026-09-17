@@ -80,10 +80,26 @@ export default function PrivacyPage() {
         </p>
       </Section>
 
+      <Section heading="Analytics">
+        <p>
+          We use Vercel Web Analytics and Speed Insights to see which pages get
+          visited and how fast they load. Both are cookieless: they set nothing
+          on your device, assign you no identifier, and cannot follow you to any
+          other site.
+        </p>
+        <p>
+          What they record is aggregate — page paths, referrers, country,
+          browser and device type, and page-load timings. None of it is tied to
+          you as a person, and we cannot single out an individual visitor from
+          it.
+        </p>
+      </Section>
+
       <Section heading="What we don't do">
         <List
           items={[
-            "No third-party advertising or tracking pixels",
+            "No advertising networks or tracking pixels",
+            "No cookies for analytics — only the one that stops double-voting",
             "No selling or sharing of personal data",
             "No storing of raw IP addresses",
             "No email marketing — we do not send you anything",
