@@ -54,8 +54,8 @@ export function CreateForm({ categories }: { categories: Category[] }) {
   const [a, setA] = useState(emptySide(DEFAULT_COLOR_A));
   const [b, setB] = useState(emptySide(DEFAULT_COLOR_B));
   const [stats, setStats] = useState<StatRow[]>([
-    { label: "Power", a: 50, b: 50 },
-    { label: "Charm", a: 50, b: 50 },
+    { label: "Strength", a: 50, b: 50 },
+    { label: "Charisma", a: 50, b: 50 },
   ]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,15 +121,12 @@ export function CreateForm({ categories }: { categories: Category[] }) {
   // is literally what everyone else will see — not an approximation of it.
   const preview = (s: SideState, which: "a" | "b", fallback: string) => ({
     id: "preview",
-    contenderId: "preview",
-    slug: "preview",
     side: "a" as const,
     name: s.name.trim() || fallback,
     nickname: s.nickname.trim() || null,
     color: s.color,
     imageUrl: s.imageUrl,
     stats: stats.filter((x) => x.label.trim()).map((x) => ({ label: x.label, value: x[which] })),
-    answer: null,
     voteCount: 0,
   });
 
@@ -144,7 +141,7 @@ export function CreateForm({ categories }: { categories: Category[] }) {
             <input
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Which one actually gets you through the day?"
+              placeholder="Who is the strongest Avenger?"
               maxLength={160}
               className={inputClass}
             />
@@ -212,8 +209,20 @@ export function CreateForm({ categories }: { categories: Category[] }) {
           )}
         </Section>
 
-        <SideEditor label="Side A" state={a} onChange={setA} />
-        <SideEditor label="Side B" state={b} onChange={setB} />
+        <SideEditor
+          label="Side A"
+          state={a}
+          onChange={setA}
+          namePlaceholder="Iron Man"
+          nicknamePlaceholder="The Futurist"
+        />
+        <SideEditor
+          label="Side B"
+          state={b}
+          onChange={setB}
+          namePlaceholder="Captain America"
+          nicknamePlaceholder="The First Avenger"
+        />
 
 
         <Section title="Tale of the tape">
@@ -349,14 +358,23 @@ function Field({
   );
 }
 
+/**
+ * The two editors carry different placeholders on purpose: read together they
+ * spell out one worked matchup, which explains what a contender is far faster
+ * than the same generic hint printed twice.
+ */
 function SideEditor({
   label,
   state,
   onChange,
+  namePlaceholder,
+  nicknamePlaceholder,
 }: {
   label: string;
   state: SideState;
   onChange: (s: SideState) => void;
+  namePlaceholder: string;
+  nicknamePlaceholder: string;
 }) {
   const set = <K extends keyof SideState>(key: K, value: SideState[K]) =>
     onChange({ ...state, [key]: value });
@@ -375,7 +393,7 @@ function SideEditor({
             <input
               value={state.name}
               onChange={(e) => set("name", e.target.value)}
-              placeholder="A Rock"
+              placeholder={namePlaceholder}
               maxLength={60}
               className={inputClass}
             />
@@ -384,7 +402,7 @@ function SideEditor({
             <input
               value={state.nickname}
               onChange={(e) => set("nickname", e.target.value)}
-              placeholder="The Silent Type"
+              placeholder={nicknamePlaceholder}
               maxLength={40}
               className={inputClass}
             />

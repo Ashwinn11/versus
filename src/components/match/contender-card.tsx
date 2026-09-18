@@ -89,12 +89,6 @@ export function ContenderCard({
           {contender.name}
         </h3>
 
-        {contender.answer && (
-          <p className="mt-1 line-clamp-2 text-pretty text-[0.8rem] leading-snug text-ink-soft">
-            &ldquo;{contender.answer}&rdquo;
-          </p>
-        )}
-
         {revealed ? (
           <div className="mt-auto flex items-end justify-between pt-2.5">
             <span className="tnum text-accent font-display text-[2rem] font-semibold leading-none">

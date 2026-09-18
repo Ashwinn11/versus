@@ -21,13 +21,11 @@ import {
 export type Stat = { label: string; value: number };
 
 export const matchStatus = pgEnum("match_status", [
-  "draft",
   "scheduled",
   "live",
   "ended",
 ]);
 export const contenderSide = pgEnum("contender_side", ["a", "b"]);
-export const decidedBy = pgEnum("decided_by", ["time", "creator"]);
 
 /* -------------------------------------------------------------------------- */
 /*  Auth (better-auth owns these table shapes)                                 */
@@ -109,8 +107,7 @@ export const verification = pgTable("verification", {
 
 /**
  * Curated and seeded, never user-created — the homepage tab bar is a design
- * surface, and letting it grow unbounded is what turns it into tag soup. The
- * open-ended half of the taxonomy lives in `tags` instead.
+ * surface, and letting it grow unbounded is what turns it into tag soup.
  */
 export const categories = pgTable("categories", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -120,21 +117,8 @@ export const categories = pgTable("categories", {
   icon: text("icon").notNull(),
   accentColor: text("accent_color").notNull(),
   sortOrder: integer("sort_order").default(0).notNull(),
-  /** `crossover` is assigned by the system when the two sides disagree; it is
-   *  never offered as a choice in the create flow. */
   isSystem: boolean("is_system").default(false).notNull(),
 });
-
-export const tags = pgTable(
-  "tags",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    slug: text("slug").notNull().unique(),
-    label: text("label").notNull(),
-    usageCount: integer("usage_count").default(0).notNull(),
-  },
-  (t) => [index("tags_usage_idx").on(t.usageCount.desc())],
-);
 
 /* -------------------------------------------------------------------------- */
 /*  Matches                                                                    */
@@ -158,7 +142,7 @@ export const matches = pgTable(
     createdBy: text("created_by").references(() => user.id, {
       onDelete: "set null",
     }),
-    status: matchStatus("status").default("draft").notNull(),
+    status: matchStatus("status").default("scheduled").notNull(),
     startsAt: timestamp("starts_at", { withTimezone: true }),
     endsAt: timestamp("ends_at", { withTimezone: true }),
     endedAt: timestamp("ended_at", { withTimezone: true }),
@@ -166,7 +150,6 @@ export const matches = pgTable(
     featuredRank: integer("featured_rank"),
     totalVotes: integer("total_votes").default(0).notNull(),
     winnerMatchContenderId: uuid("winner_match_contender_id"),
-    decidedBy: decidedBy("decided_by"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -213,8 +196,6 @@ export const matchContenders = pgTable(
     color: text("color").notNull(),
     imageUrl: text("image_url"),
     stats: jsonb("stats").$type<Stat[]>(),
-    /** This side's line arguing its case. */
-    answer: text("answer"),
     voteCount: integer("vote_count").default(0).notNull(),
   },
   (t) => [uniqueIndex("match_contenders_side_uq").on(t.matchId, t.side)],
@@ -243,22 +224,6 @@ export const matchCategories = pgTable(
   (t) => [
     primaryKey({ columns: [t.matchId, t.categoryId] }),
     index("match_categories_lookup_idx").on(t.categoryId, t.matchId),
-  ],
-);
-
-export const matchTags = pgTable(
-  "match_tags",
-  {
-    matchId: uuid("match_id")
-      .notNull()
-      .references(() => matches.id, { onDelete: "cascade" }),
-    tagId: uuid("tag_id")
-      .notNull()
-      .references(() => tags.id, { onDelete: "cascade" }),
-  },
-  (t) => [
-    primaryKey({ columns: [t.matchId, t.tagId] }),
-    index("match_tags_lookup_idx").on(t.tagId, t.matchId),
   ],
 );
 
@@ -357,10 +322,6 @@ export const categoriesRelations = relations(categories, ({ many }) => ({
   matchCategories: many(matchCategories),
 }));
 
-export const tagsRelations = relations(tags, ({ many }) => ({
-  matchTags: many(matchTags),
-}));
-
 export const matchesRelations = relations(matches, ({ one, many }) => ({
   primaryCategory: one(categories, {
     fields: [matches.primaryCategoryId],
@@ -369,7 +330,6 @@ export const matchesRelations = relations(matches, ({ one, many }) => ({
   creator: one(user, { fields: [matches.createdBy], references: [user.id] }),
   contenders: many(matchContenders),
   matchCategories: many(matchCategories),
-  matchTags: many(matchTags),
 }));
 
 export const matchContendersRelations = relations(matchContenders, ({ one }) => ({
@@ -392,11 +352,3 @@ export const matchCategoriesRelations = relations(
     }),
   }),
 );
-
-export const matchTagsRelations = relations(matchTags, ({ one }) => ({
-  match: one(matches, {
-    fields: [matchTags.matchId],
-    references: [matches.id],
-  }),
-  tag: one(tags, { fields: [matchTags.tagId], references: [tags.id] }),
-}));

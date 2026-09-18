@@ -16,7 +16,6 @@ export async function FeedPage({
   icon,
   accent,
   categorySlug,
-  tagSlug,
   status,
   showNav = true,
   variant = "default",
@@ -27,7 +26,6 @@ export async function FeedPage({
   icon?: IconName;
   accent?: string;
   categorySlug?: string;
-  tagSlug?: string;
   status?: MatchStatus | MatchStatus[];
   showNav?: boolean;
   /** `result` leads each card with its winner. */
@@ -36,7 +34,7 @@ export async function FeedPage({
 }) {
   const [categories, page] = await Promise.all([
     showNav ? listCategories() : Promise.resolve([]),
-    listMatches({ categorySlug, tagSlug, status, limit: 12 }),
+    listMatches({ categorySlug, status, limit: 12 }),
   ]);
 
   return (
@@ -71,7 +69,6 @@ export async function FeedPage({
           <LoadMore
             initialCursor={page.nextCursor}
             categorySlug={categorySlug}
-            tagSlug={tagSlug}
             status={typeof status === "string" ? status : undefined}
             variant={variant}
             hideStatus={typeof status === "string"}

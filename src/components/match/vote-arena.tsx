@@ -15,7 +15,7 @@ type Props = {
   slug: string;
   a: ResolvedContender;
   b: ResolvedContender;
-  status: "draft" | "scheduled" | "live" | "ended";
+  status: "scheduled" | "live" | "ended";
   winnerId: string | null;
   /** The viewer's existing vote, if the server found one for their cookie. */
   initialVotedFor: string | null;

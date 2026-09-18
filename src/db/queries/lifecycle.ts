@@ -37,7 +37,7 @@ export async function settleDueMatches(now = new Date()) {
     );
 
   for (const match of expired) {
-    await settleMatch(match.id, "time", now);
+    await settleMatch(match.id, now);
   }
 
   return { started: started.length, settled: expired.length };
@@ -73,11 +73,7 @@ export async function sweepIfStale() {
  * Closes a match and records who won. Contenders belong to a single match, so
  * there are no lifetime records to update — the result lives on the match.
  */
-export async function settleMatch(
-  matchId: string,
-  decidedBy: "time" | "creator",
-  now = new Date(),
-) {
+export async function settleMatch(matchId: string, now = new Date()) {
   const sides = await db
     .select({ id: matchContenders.id, voteCount: matchContenders.voteCount })
     .from(matchContenders)
@@ -95,7 +91,6 @@ export async function settleMatch(
     .set({
       status: "ended",
       endedAt: now,
-      decidedBy,
       winnerMatchContenderId: winner?.id ?? null,
       updatedAt: now,
     })

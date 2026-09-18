@@ -20,9 +20,6 @@ export const env = {
   get DATABASE_URL() {
     return required("DATABASE_URL");
   },
-  get DATABASE_URL_UNPOOLED() {
-    return process.env.DATABASE_URL_UNPOOLED || required("DATABASE_URL");
-  },
   get BETTER_AUTH_SECRET() {
     return required("BETTER_AUTH_SECRET");
   },

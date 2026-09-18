@@ -39,11 +39,7 @@ export default async function CategoryPage({ params }: PageProps<"/c/[category]"
   return (
     <FeedPage
       title={row.name}
-      subtitle={
-        row.slug === "crossover"
-          ? "Matches whose two sides come from different corners of the arena."
-          : `Every match with a ${row.name} contender in it.`
-      }
+      subtitle={`Every match with a ${row.name} contender in it.`}
       icon={categoryIcon(row.slug)}
       accent={row.accentColor}
       categorySlug={row.slug}

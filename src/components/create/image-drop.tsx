@@ -83,6 +83,9 @@ export function ImageDrop({
         publicUrl: string;
       };
 
+      // Every key is unique, so a URL's bytes never change and can be cached
+      // forever. Set here rather than server-side because content-type and
+      // cache-control are not part of the presigned signature.
       const put = await fetch(uploadUrl, {
         method: "PUT",
         headers: {

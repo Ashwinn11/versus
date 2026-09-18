@@ -17,7 +17,6 @@ export type ResolvedContender = {
   color: string;
   imageUrl: string | null;
   stats: Stat[];
-  answer: string | null;
   voteCount: number;
 };
 
@@ -29,7 +28,6 @@ type Row = {
   color: string;
   imageUrl: string | null;
   stats: Stat[] | null;
-  answer: string | null;
   voteCount: number;
 };
 

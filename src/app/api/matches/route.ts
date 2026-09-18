@@ -7,7 +7,7 @@ import { getSession } from "@/lib/session";
 import { createMatchSchema } from "@/lib/validation/match";
 import { z } from "zod";
 
-const STATUSES = new Set(["draft", "scheduled", "live", "ended"]);
+const STATUSES = new Set(["scheduled", "live", "ended"]);
 
 /** Backs the "Load more" control on every feed. */
 export async function GET(request: NextRequest) {
@@ -29,7 +29,6 @@ export async function GET(request: NextRequest) {
     createdBy,
     status: status && STATUSES.has(status) ? (status as MatchStatus) : undefined,
     categorySlug: p.get("category") ?? undefined,
-    tagSlug: p.get("tag") ?? undefined,
     cursor: p.get("cursor") ?? undefined,
     limit: Number(p.get("limit")) || 12,
   });

@@ -13,8 +13,6 @@ const hexColor = z
   .regex(/^#[0-9a-fA-F]{6}$/, "Colour must be a 6-digit hex value");
 
 export const contenderInputSchema = z.object({
-  /** Present when picking someone already on the roster. */
-  contenderId: z.uuid().optional(),
   name: z.string().trim().min(1).max(60),
   nickname: z.string().trim().max(40).optional().or(z.literal("")),
   color: hexColor,

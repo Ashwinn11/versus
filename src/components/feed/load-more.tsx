@@ -9,7 +9,6 @@ import type { MatchSummary } from "@/db/queries/matches";
 type Props = {
   initialCursor: string | null;
   categorySlug?: string;
-  tagSlug?: string;
   status?: string;
   /** Must match the first page's variant, or page two changes shape. */
   variant?: "default" | "result";
@@ -27,7 +26,6 @@ type Props = {
 export function LoadMore({
   initialCursor,
   categorySlug,
-  tagSlug,
   status,
   variant = "default",
   hideStatus,
@@ -42,7 +40,6 @@ export function LoadMore({
   async function loadNext(next: string) {
     const params = new URLSearchParams({ cursor: next });
     if (categorySlug) params.set("category", categorySlug);
-    if (tagSlug) params.set("tag", tagSlug);
     if (status) params.set("status", status);
     if (mine) params.set("mine", "1");
 

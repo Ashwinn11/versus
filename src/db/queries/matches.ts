@@ -9,14 +9,12 @@ import {
   categories,
   matchCategories,
   matchContenders,
-  matchTags,
   matches,
-  tags,
 } from "@/db/schema";
 import { sweepIfStale } from "@/db/queries/lifecycle";
 import { toContender, type ResolvedContender } from "@/lib/contenders";
 
-export type MatchStatus = "draft" | "scheduled" | "live" | "ended";
+export type MatchStatus = "scheduled" | "live" | "ended";
 
 export type MatchSummary = {
   id: string;
@@ -62,7 +60,6 @@ function decodeCursor(cursor: string): { startsAt: Date | null; id: string } | n
 export async function listMatches(opts: {
   status?: MatchStatus | MatchStatus[];
   categorySlug?: string;
-  tagSlug?: string;
   limit?: number;
   cursor?: string;
   excludeIds?: string[];
@@ -97,16 +94,6 @@ export async function listMatches(opts: {
           and ${categories.slug} = ${opts.categorySlug})`,
     );
   }
-  if (opts.tagSlug) {
-    where.push(
-      sql`exists (
-        select 1 from ${matchTags}
-        join ${tags} on ${tags.id} = ${matchTags.tagId}
-        where ${matchTags.matchId} = ${matches.id}
-          and ${tags.slug} = ${opts.tagSlug})`,
-    );
-  }
-
   const cursor = opts.cursor ? decodeCursor(opts.cursor) : null;
   if (cursor) {
     // Strict "after this exact row" — the id tiebreak is what stops rows with

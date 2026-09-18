@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 export type IconName =
   | "people" | "characters" | "animals" | "food" | "objects" | "tech"
   | "games" | "screen" | "music" | "sports" | "places" | "concepts"
-  | "mythical" | "vehicles" | "cursed" | "crossover"
+  | "mythical" | "vehicles" | "cursed"
   | "live" | "clock" | "trophy" | "share" | "plus" | "check"
   | "chevron-right" | "chevron-down" | "arrow-right" | "close" | "search"
   | "logout" | "trash"
@@ -128,13 +128,6 @@ const PATHS: Record<IconName, React.ReactNode> = {
     <>
       <path d="M12 3.5c-4.1 0-7 2.8-7 6.5 0 2.3 1 3.7 2 4.6.5.5.8 1 .8 1.7V18a2 2 0 0 0 2 2h4.4a2 2 0 0 0 2-2v-1.7c0-.7.3-1.2.8-1.7 1-.9 2-2.3 2-4.6 0-3.7-2.9-6.5-7-6.5Z" />
       <path d="M9.5 10.5h.01M14.5 10.5h.01M12 15v5" />
-    </>
-  ),
-  crossover: (
-    <>
-      <path d="M12 3.5a8.5 8.5 0 1 1-6 14.5" />
-      <path d="M12 7.5a4.5 4.5 0 1 0 3.2 7.7" />
-      <path d="M6 18H3.5M6 18v2.5" />
     </>
   ),
 

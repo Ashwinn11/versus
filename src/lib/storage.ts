@@ -6,13 +6,6 @@ import { nanoid } from "nanoid";
 
 import { env, isUploadConfigured } from "@/env";
 
-/**
- * Objects are immutable: every key is unique, so a URL's bytes never change
- * and can be cached forever. This is set by the client on the PUT, since
- * content-type and cache-control are not part of the presigned signature.
- */
-export const IMMUTABLE_CACHE = "public, max-age=31536000, immutable";
-
 let client: S3Client | undefined;
 
 function s3() {
