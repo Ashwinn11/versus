@@ -1,5 +1,5 @@
 {
-  "id": "dea71ecc-4c70-4bc0-8da9-7fb220d5a2c5",
+  "id": "665a7a4e-26af-42e7-b8f3-58c7aa5eb52d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -320,12 +320,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "answer": {
-          "name": "answer",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "vote_count": {
           "name": "vote_count",
           "type": "integer",
@@ -378,88 +372,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.match_tags": {
-      "name": "match_tags",
-      "schema": "",
-      "columns": {
-        "match_id": {
-          "name": "match_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "tag_id": {
-          "name": "tag_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "match_tags_lookup_idx": {
-          "name": "match_tags_lookup_idx",
-          "columns": [
-            {
-              "expression": "tag_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "match_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "match_tags_match_id_matches_id_fk": {
-          "name": "match_tags_match_id_matches_id_fk",
-          "tableFrom": "match_tags",
-          "tableTo": "matches",
-          "columnsFrom": [
-            "match_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "match_tags_tag_id_tags_id_fk": {
-          "name": "match_tags_tag_id_tags_id_fk",
-          "tableFrom": "match_tags",
-          "tableTo": "tags",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "match_tags_match_id_tag_id_pk": {
-          "name": "match_tags_match_id_tag_id_pk",
-          "columns": [
-            "match_id",
-            "tag_id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.matches": {
       "name": "matches",
       "schema": "",
@@ -507,7 +419,7 @@
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": "'draft'"
+          "default": "'scheduled'"
         },
         "starts_at": {
           "name": "starts_at",
@@ -550,13 +462,6 @@
         "winner_match_contender_id": {
           "name": "winner_match_contender_id",
           "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "decided_by": {
-          "name": "decided_by",
-          "type": "decided_by",
-          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
@@ -775,65 +680,29 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.tags": {
-      "name": "tags",
+    "public.site_counters": {
+      "name": "site_counters",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "default": "gen_random_uuid()"
+          "default": 1
         },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "label": {
-          "name": "label",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "usage_count": {
-          "name": "usage_count",
+        "total_visitors": {
+          "name": "total_visitors",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 0
         }
       },
-      "indexes": {
-        "tags_usage_idx": {
-          "name": "tags_usage_idx",
-          "columns": [
-            {
-              "expression": "usage_count",
-              "isExpression": false,
-              "asc": false,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "tags_slug_unique": {
-          "name": "tags_slug_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -948,6 +817,55 @@
         }
       },
       "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.visitors": {
+      "name": "visitors",
+      "schema": "",
+      "columns": {
+        "voter_key": {
+          "name": "voter_key",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "first_seen": {
+          "name": "first_seen",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_seen": {
+          "name": "last_seen",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "visitors_last_seen_idx": {
+          "name": "visitors_last_seen_idx",
+          "columns": [
+            {
+              "expression": "last_seen",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -1134,19 +1052,10 @@
         "b"
       ]
     },
-    "public.decided_by": {
-      "name": "decided_by",
-      "schema": "public",
-      "values": [
-        "time",
-        "creator"
-      ]
-    },
     "public.match_status": {
       "name": "match_status",
       "schema": "public",
       "values": [
-        "draft",
         "scheduled",
         "live",
         "ended"
