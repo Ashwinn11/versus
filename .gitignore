@@ -44,3 +44,6 @@ next-env.d.ts
 
 # Wrangler local state
 .wrangler/
+
+# One-shot migration helpers, never part of the repo.
+scripts/
