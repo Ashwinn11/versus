@@ -7,6 +7,7 @@ import { LandingHero } from "@/components/landing-hero";
 import { MainEvent } from "@/components/match/main-event";
 import { Icon } from "@/components/ui/icon";
 import { getMainEvent, listCategories, listMatches } from "@/db/queries/matches";
+import { SITE_TAGLINE } from "@/lib/site";
 
 // Feeds are shared across everyone and change only as matches are created or
 // settled, so a short revalidate keeps the homepage cheap without ever showing
@@ -36,7 +37,18 @@ export default async function HomePage() {
           : "mx-auto w-full max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pt-10"
       }
     >
-      {mainEvent ? <MainEvent match={mainEvent} /> : <LandingHero />}
+      {mainEvent ? (
+        <>
+          {/* Once a main event exists the landing hero never renders, so this
+              is the only place the positioning line reaches anyone above the
+              fold. Held to a single label line on purpose: the main event sits
+              deliberately tight to the top and cannot spare the height. */}
+          <p className="label mb-3 text-center">{SITE_TAGLINE}</p>
+          <MainEvent match={mainEvent} />
+        </>
+      ) : (
+        <LandingHero />
+      )}
 
       {live.items.length > 0 && (
         <>

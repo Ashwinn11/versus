@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Icon } from "@/components/ui/icon";
+import { SITE_TAGLINE } from "@/lib/site";
 
 const LINKS = [
   { href: "/hall-of-fame", label: "Hall of Fame" },
@@ -28,8 +29,8 @@ export function SiteFooter() {
               </span>
             </Link>
             <p className="mt-3 max-w-xs text-pretty text-sm text-ink-soft">
-              Two contenders, one question, and a crowd that decides. Anything
-              versus anything.
+              {SITE_TAGLINE}. Two contenders, one question, and a crowd that
+              decides.
             </p>
           </div>
 

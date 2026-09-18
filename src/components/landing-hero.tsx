@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Icon } from "@/components/ui/icon";
 import { IconTile, type Tone } from "@/components/ui/icon-tile";
+import { SITE_TAGLINE } from "@/lib/site";
 
 const EXAMPLES = [
   { a: "Coffee", b: "Tea", colorA: "#a16207", colorB: "#84cc16" },
@@ -26,13 +27,12 @@ export function LandingHero() {
       </span>
 
       <h1 className="mx-auto mt-4 max-w-2xl text-balance font-display text-[clamp(2rem,5.2vw,3.4rem)] leading-[0.98] text-ink">
-        Anything versus anything.
+        {SITE_TAGLINE}.
       </h1>
 
       <p className="mx-auto mt-3 max-w-lg text-pretty text-sm text-ink-soft sm:text-base">
-        Put two things in the ring, ask one question, and let the internet settle
-        it. A person, a rock, an abstract concept — the arena does not
-        discriminate.
+        Anything versus anything. Put two things in the ring, ask one question,
+        and let the crowd settle it — a person, a rock, an abstract concept.
       </p>
 
       <div className="mt-6 flex items-center justify-center gap-2.5 sm:gap-3">

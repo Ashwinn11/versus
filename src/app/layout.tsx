@@ -30,7 +30,7 @@ const sans = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/site";
 
 const SITE = SITE_NAME;
 const DESCRIPTION = SITE_DESCRIPTION;
@@ -38,7 +38,7 @@ const DESCRIPTION = SITE_DESCRIPTION;
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   alternates: { canonical: "/" },
-  title: { default: `${SITE} — anything vs. anything`, template: `%s · ${SITE}` },
+  title: { default: `${SITE} — ${SITE_TAGLINE.toLowerCase()}`, template: `%s · ${SITE}` },
   description: DESCRIPTION,
   openGraph: {
     title: SITE,

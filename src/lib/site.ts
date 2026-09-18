@@ -15,8 +15,16 @@ export const SITE_URL = (
 ).replace(/\/$/, "");
 
 export const SITE_NAME = "Versus";
+
+/**
+ * The positioning line. Lives here rather than being retyped per surface so
+ * the header, the empty arena, the footer and the page title cannot drift
+ * into three slightly different claims about what this site is.
+ */
+export const SITE_TAGLINE = "The internet's biggest arena";
+
 export const SITE_DESCRIPTION =
-  "The internet's biggest arena. Two contenders, one question, and a crowd that decides. Vote live on anything versus anything.";
+  `${SITE_TAGLINE}. Two contenders, one question, and a crowd that decides. Vote live on anything versus anything.`;
 
 export function absoluteUrl(path: string) {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
